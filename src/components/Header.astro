@@ -22,9 +22,6 @@ import { mockUser } from '../data/mockData';
     
     <div class="user-menu">
       <div class="header-actions" style="display: flex; gap: 1rem; align-items: center; margin-right: 1rem;">
-        <button class="btn-mic" aria-label="Voice Command" title="Speak your request" id="mic-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-icon"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-        </button>
         <select class="language-select" id="lang-select">
           <option value="en">English</option>
           <option value="hi">Hindi (हिंदी)</option>
@@ -50,6 +47,7 @@ import { mockUser } from '../data/mockData';
       <a href="/" class="btn-logout">Logout</a>
     </div>
   </div>
+</header>
 </header>
 
 <style>
@@ -180,23 +178,6 @@ import { mockUser } from '../data/mockData';
     color: var(--danger);
   }
 
-  .btn-mic {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    background: #f1f5f9;
-    color: var(--primary);
-    transition: all 0.2s;
-  }
-
-  .btn-mic:hover {
-    background: var(--primary-light);
-    transform: scale(1.05);
-  }
-
   .language-select {
     padding: 0.4rem 0.8rem;
     border: 1px solid var(--border);
@@ -214,4 +195,5 @@ import { mockUser } from '../data/mockData';
     border-color: var(--primary);
     box-shadow: 0 0 0 2px var(--primary-light);
   }
+
 </style>
