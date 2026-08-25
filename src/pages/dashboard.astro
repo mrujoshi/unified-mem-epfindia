@@ -131,8 +131,19 @@ import { mockUser } from '../data/mockData';
 
     const handleSubmit = () => {
       if (aiInput && aiInput.value.trim().length > 0) {
-        // For the hackathon demo, we route to the claim page directly
-        window.location.href = '/claim';
+        const text = aiInput.value.toLowerCase();
+        
+        // Simple Intent Routing
+        const isTransfer = text.includes('merge') || text.includes('transfer') || text.includes('consolidate') || text.includes('previous');
+        const isClaim = text.includes('withdraw') || text.includes('claim') || text.includes('money') || text.includes('settle');
+        
+        if (isTransfer) {
+          window.location.href = '/transfer';
+        } else if (isClaim) {
+          window.location.href = '/claim';
+        } else {
+          alert("I didn't quite catch that. Try asking to 'withdraw PF' or 'merge previous accounts'.");
+        }
       }
     };
 
