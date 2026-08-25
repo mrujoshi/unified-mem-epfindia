@@ -181,9 +181,13 @@ import { mockUser } from '../data/mockData';
             const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
             stream.getTracks().forEach(track => track.stop());
             
+            const selectedLang = langSelect ? langSelect.value : 'hi';
+            const sarvamLang = sarvamLangMap[selectedLang] || 'hi-IN';
+            
             const formData = new FormData();
             formData.append('file', audioBlob, 'speech.wav');
-            formData.append('model', 'saaras:v1');
+            formData.append('model', 'saaras:v3');
+            formData.append('language_code', sarvamLang);
             
             micBtn.classList.add('loading');
             
