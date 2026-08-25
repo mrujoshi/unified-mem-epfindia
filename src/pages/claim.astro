@@ -4,362 +4,88 @@ import Header from '../components/Header.astro';
 import { mockUser } from '../data/mockData';
 ---
 
-<Layout title="Online Claim">
+<Layout title="1-Click Online Claim">
   <Header />
   
   <main class="claim-container container">
     <div class="page-header">
       <div class="breadcrumbs">
-        <a href="/dashboard">Dashboard</a> &gt; <span>Online Claim</span>
+        <a href="/dashboard">Dashboard</a> &gt; <span>1-Click Claim</span>
       </div>
-      <h1>Withdrawal Claim Wizard</h1>
-      <p class="text-muted">Apply for Full Settlement (Form-19) or PF Advance (Form-31)</p>
+      <h1>AI-Assisted PF Withdrawal</h1>
+      <p class="text-muted">Your intent: "Withdraw my PF". We've prepared everything for you.</p>
     </div>
-    
-    <div class="wizard-card card">
-      <!-- Wizard Progress Bar -->
-      <div class="wizard-progress">
-        <div class="step-indicator active" id="indicator-1">
-          <div class="step-circle">1</div>
-          <span class="step-label">Eligibility</span>
-        </div>
-        <div class="progress-line"></div>
-        <div class="step-indicator" id="indicator-2">
-          <div class="step-circle">2</div>
-          <span class="step-label">Claim Details</span>
-        </div>
-        <div class="progress-line"></div>
-        <div class="step-indicator" id="indicator-3">
-          <div class="step-circle">3</div>
-          <span class="step-label">Documents</span>
-        </div>
-        <div class="progress-line"></div>
-        <div class="step-indicator" id="indicator-4">
-          <div class="step-circle">4</div>
-          <span class="step-label">Auth & Submit</span>
-        </div>
-      </div>
-      
-      <!-- Step 1: Eligibility & Verification -->
-      <div class="wizard-step active" id="step-1">
-        <h2>Verify Bank Account</h2>
-        <p class="step-desc">To proceed, verify the bank account registered with your UAN.</p>
-        
-        <div class="kyc-check-box">
-          <div class="check-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Aadhaar Verified</span>
-          </div>
-          <div class="check-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>PAN Verified</span>
-          </div>
-          <div class="check-item">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            <span>Bank Verified (HDFC Bank ****1234)</span>
-          </div>
-        </div>
-        
-        <div class="form-group bank-verify-group">
-          <label for="bank-digits">Enter last 4 digits of Bank Account</label>
-          <div class="verify-input-wrapper">
-            <input type="text" id="bank-digits" maxlength="4" placeholder="e.g. 1234" />
-            <button class="btn btn-outline" id="verify-bank-btn">Verify</button>
-          </div>
-          <span class="error-text" id="bank-error" style="display: none;">Invalid digits. Try 1234.</span>
-          <span class="success-text" id="bank-success" style="display: none;">Bank Account Verified!</span>
-        </div>
-        
-        <div class="wizard-actions">
-          <button class="btn btn-primary next-btn" id="next-1" disabled>Proceed to Claim Details</button>
-        </div>
-      </div>
-      
-      <!-- Step 2: Claim Details -->
-      <div class="wizard-step" id="step-2">
-        <h2>Claim Details</h2>
-        <p class="step-desc">Select the type of withdrawal you wish to make.</p>
-        
-        <div class="form-group">
-          <label for="claim-type">I want to apply for</label>
-          <select id="claim-type" class="form-select">
-            <option value="" disabled selected>Select Claim Type</option>
-            <option value="advance">Partial Withdrawal / Advance (Form-31)</option>
-            <option value="full">Full Final Settlement (Form-19)</option>
-          </select>
-        </div>
-        
-        <div id="advance-fields" class="conditional-fields" style="display: none;">
-          <div class="form-group">
-            <label for="purpose">Purpose of Advance</label>
-            <select id="purpose" class="form-select">
-              <option value="illness">Illness</option>
-              <option value="marriage">Marriage</option>
-              <option value="higher-education">Higher Education</option>
-              <option value="home-loan">Home Loan / Purchase of House</option>
-            </select>
-          </div>
-          
-          <div class="form-group">
-            <label for="amount">Amount Required (₹)</label>
-            <input type="number" id="amount" placeholder="Enter amount" />
-          </div>
-        </div>
-        
-        <!-- Smart Diagnostics for Form 19 -->
-        <div id="smart-diagnostics" class="conditional-fields" style="display: none;">
-          <div id="doe-blocker" class="alert-box alert-danger" style="display: none;">
-            <h4><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg> Missing Date of Exit (DOE)</h4>
-            <p>We found an employment record (<strong id="missing-doe-company"></strong>) that is missing a Date of Exit. You cannot proceed with a Full Settlement until this is updated.</p>
-            <a href="#" id="update-doe-link" class="btn btn-outline btn-sm mt-2">Update Date of Exit</a>
-          </div>
-          
-          <div id="consolidation-warning" class="alert-box alert-warning" style="display: none;">
-            <h4><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg> Un-transferred Funds Detected!</h4>
-            <p>You have <strong id="untransferred-amount"></strong> in previous accounts. If you proceed with this final settlement on your current account only, you will permanently lose the ability to withdraw those previous funds online.</p>
-            <div class="consolidation-action mt-4">
-              <p class="font-medium mb-2">Recommended Action:</p>
-              <button class="btn btn-primary w-full" id="auto-consolidate-btn">Auto-Consolidate &amp; Withdraw All</button>
-              <p class="text-sm mt-2 text-muted">This will automatically file Form-13 (Transfer) and Form-19 (Withdrawal) together.</p>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-group mt-4">
-          <label for="address">Current Address</label>
-          <textarea id="address" rows="3" placeholder="Enter your full current address"></textarea>
-        </div>
-        
-        <div class="wizard-actions space-between">
-          <button class="btn btn-outline prev-btn" data-target="1">Back</button>
-          <button class="btn btn-primary next-btn" id="next-2">Next: Upload Documents</button>
-        </div>
-      </div>
-      
-      <!-- Step 3: Document Upload -->
-      <div class="wizard-step" id="step-3">
-        <h2>Upload Documents</h2>
-        <p class="step-desc">Upload a scanned copy of your Cancelled Cheque or Bank Passbook.</p>
-        
-        <div class="upload-zone" id="drop-zone">
-          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-          <h4>Drag and drop your file here</h4>
-          <p class="text-muted">or click to browse from your computer</p>
-          <p class="text-sm mt-2 text-muted">Format: JPG, JPEG, or PDF (Max 500KB)<br/>Ensure Name and Account Number are clearly visible.</p>
-          <button class="btn btn-outline mt-4" id="mock-upload-btn">Browse Files</button>
-          <input type="file" id="file-input" style="display: none;" />
-        </div>
-        
-        <div class="uploaded-file" id="uploaded-file-preview" style="display: none;">
-          <div class="file-info">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-            <span class="file-name">cheque_copy.jpg</span>
-          </div>
-          <button class="text-danger" id="remove-file-btn">Remove</button>
-        </div>
-        
-        <div class="wizard-actions space-between">
-          <button class="btn btn-outline prev-btn" data-target="2">Back</button>
-          <button class="btn btn-primary next-btn" id="next-3">Next: Authenticate</button>
-        </div>
-      </div>
-      
-      <!-- Step 4: Auth & Submit -->
-      <div class="wizard-step" id="step-4">
-        <h2>Authentication</h2>
-        <p class="step-desc">Authenticate via Aadhaar OTP to submit your claim securely.</p>
-        
-        <div class="consent-box">
-          <input type="checkbox" id="aadhaar-consent" />
-          <label for="aadhaar-consent">
-            I hereby consent to provide my Aadhaar Number, Biometric and/or One Time Pin (OTP) data for Aadhaar based authentication for the purpose of establishing my identity.
-          </label>
-        </div>
-        
-        <div class="otp-section" id="otp-section" style="display: none;">
-          <p class="text-success mb-4">OTP sent successfully to mobile ending in ****89!</p>
-          <div class="form-group">
-            <label for="otp">Enter 6-digit Aadhaar OTP</label>
-            <input type="text" id="otp" maxlength="6" placeholder="Enter OTP (e.g. 123456)" />
-          </div>
-        </div>
-        
-        <div class="wizard-actions space-between">
-          <button class="btn btn-outline prev-btn" data-target="3">Back</button>
-          <button class="btn btn-primary" id="get-otp-btn" disabled>Get Aadhaar OTP</button>
-          <button class="btn btn-primary" id="submit-claim-btn" style="display: none;">Submit Claim</button>
-        </div>
-      </div>
-      
-      <!-- Success State -->
-      <div class="wizard-step success-step" id="step-5">
-        <div class="success-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-        <h2>Claim Submitted Successfully!</h2>
-        <p class="text-muted mt-2">Your claim has been forwarded to the field office.</p>
-        
-        <div class="tracking-info">
-          <span class="tracking-label">Tracking ID</span>
-          <span class="tracking-value">CLM-202608-X91M2P</span>
-        </div>
-        
-        <a href="/dashboard" class="btn btn-primary mt-6">Return to Dashboard</a>
-      </div>
-      
+
+    <div class="card digilocker-card" id="claim-form-state">
+       <div class="digilocker-header">
+         <div class="dl-icon">
+           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+         </div>
+         <h3>DigiLocker Verified Data</h3>
+       </div>
+       
+       <div class="data-grid">
+         <div class="data-item">
+           <span class="data-label">Aadhaar</span>
+           <span class="data-value">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+             Verified (**** **** 1234)
+           </span>
+         </div>
+         <div class="data-item">
+           <span class="data-label">Bank Account</span>
+           <span class="data-value">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+             HDFC Bank (Ends in 8912)
+           </span>
+         </div>
+         <div class="data-item">
+           <span class="data-label">Claim Type</span>
+           <span class="data-value">Full Final Settlement (Form-19)</span>
+         </div>
+       </div>
+
+       <div class="amount-card">
+         <span class="amount-label">Estimated Withdrawal Amount</span>
+         <span class="amount-value">₹ 2,45,000</span>
+       </div>
+
+       <div class="action-section">
+         <p class="text-sm text-muted mb-4">By clicking confirm, you authorize EPFO to fetch your e-KYC from DigiLocker and process this claim automatically. No document uploads required.</p>
+         <button class="btn btn-primary btn-large w-full" id="one-click-submit">
+           Confirm & Submit Claim
+         </button>
+       </div>
     </div>
+
+    <!-- Success State -->
+    <div class="card success-step" id="success-state" style="display: none;">
+      <div class="success-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+      </div>
+      <h2>Claim Submitted Successfully!</h2>
+      <p class="text-muted mt-2">Zero forms filled. Your claim has been auto-processed via DigiLocker.</p>
+      
+      <div class="tracking-info">
+        <span class="tracking-label">Tracking ID</span>
+        <span class="tracking-value">CLM-202608-X91M2P</span>
+      </div>
+      
+      <a href="/dashboard" class="btn btn-outline mt-6">Return to Dashboard</a>
+    </div>
+
   </main>
 </Layout>
 
-<script define:vars={{ mockUser }}>
-  document.addEventListener('DOMContentLoaded', () => {
-    // State Initialization
-    let userStr = localStorage.getItem('epfMockUser');
-    if (!userStr) {
-      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
-      userStr = JSON.stringify(mockUser);
+<script>
+  document.getElementById('one-click-submit')?.addEventListener('click', () => {
+    const claimForm = document.getElementById('claim-form-state');
+    const successState = document.getElementById('success-state');
+    
+    if(claimForm && successState) {
+      claimForm.style.display = 'none';
+      successState.style.display = 'block';
     }
-    const currentUser = JSON.parse(userStr);
-    
-    // Navigation Logic
-    const steps = document.querySelectorAll('.wizard-step');
-    const indicators = document.querySelectorAll('.step-indicator');
-    
-    function goToStep(stepNum) {
-      steps.forEach(s => s.classList.remove('active'));
-      document.getElementById(`step-${stepNum}`)?.classList.add('active');
-      
-      indicators.forEach((ind, index) => {
-        if (index < stepNum) {
-          ind.classList.add('active');
-        } else {
-          ind.classList.remove('active');
-        }
-      });
-    }
-
-    // Step 1: Verification
-    const bankDigits = document.getElementById('bank-digits');
-    const verifyBtn = document.getElementById('verify-bank-btn');
-    const next1 = document.getElementById('next-1');
-    
-    verifyBtn?.addEventListener('click', () => {
-      if (bankDigits.value === '1234') {
-        document.getElementById('bank-success').style.display = 'block';
-        document.getElementById('bank-error').style.display = 'none';
-        next1.disabled = false;
-        bankDigits.disabled = true;
-        verifyBtn.disabled = true;
-      } else {
-        document.getElementById('bank-error').style.display = 'block';
-        document.getElementById('bank-success').style.display = 'none';
-      }
-    });
-    
-    next1?.addEventListener('click', () => goToStep(2));
-
-    // Step 2: Claim Details
-    const claimType = document.getElementById('claim-type');
-    const advanceFields = document.getElementById('advance-fields');
-    const smartDiagnostics = document.getElementById('smart-diagnostics');
-    const doeBlocker = document.getElementById('doe-blocker');
-    const consolidationWarning = document.getElementById('consolidation-warning');
-    const next2 = document.getElementById('next-2');
-    const autoConsolidateBtn = document.getElementById('auto-consolidate-btn');
-    
-    claimType?.addEventListener('change', (e) => {
-      const val = e.target.value;
-      
-      // Reset displays
-      advanceFields.style.display = 'none';
-      smartDiagnostics.style.display = 'none';
-      doeBlocker.style.display = 'none';
-      consolidationWarning.style.display = 'none';
-      next2.style.display = 'block';
-      next2.disabled = false;
-      
-      if (val === 'advance') {
-        advanceFields.style.display = 'block';
-      } else if (val === 'full') {
-        smartDiagnostics.style.display = 'block';
-        
-        // Run Diagnostics
-        // 1. Check for missing DOE in previous employers (skipping the current one for this demo logic)
-        const previousEmployers = currentUser.memberIds.slice(1); // Assuming index 0 is current
-        const missingDoe = previousEmployers.find(m => !m.dateOfExit);
-        
-        if (missingDoe) {
-          document.getElementById('missing-doe-company').textContent = missingDoe.companyName;
-          document.getElementById('update-doe-link').href = `/mark-exit?id=${missingDoe.memberId}`;
-          doeBlocker.style.display = 'block';
-          next2.disabled = true; // Block proceeding
-          return;
-        }
-        
-        // 2. Check for un-transferred funds
-        const validPreviousEmployers = previousEmployers.filter(m => m.dateOfExit);
-        if (validPreviousEmployers.length > 0) {
-          let totalUntransferred = 0;
-          validPreviousEmployers.forEach(m => {
-            totalUntransferred += m.totalEmployeeShare + m.totalEmployerShare + m.totalPensionShare;
-          });
-          
-          document.getElementById('untransferred-amount').textContent = `₹${totalUntransferred.toLocaleString('en-IN')}`;
-          consolidationWarning.style.display = 'block';
-          next2.style.display = 'none'; // Hide normal next button, force consolidate
-        }
-      }
-    });
-    
-    autoConsolidateBtn?.addEventListener('click', () => goToStep(3));
-    
-    document.getElementById('next-2')?.addEventListener('click', () => goToStep(3));
-
-    // Step 3: Upload
-    const mockUploadBtn = document.getElementById('mock-upload-btn');
-    const dropZone = document.getElementById('drop-zone');
-    const uploadedFilePreview = document.getElementById('uploaded-file-preview');
-    const removeFileBtn = document.getElementById('remove-file-btn');
-    
-    mockUploadBtn?.addEventListener('click', () => {
-      dropZone.style.display = 'none';
-      uploadedFilePreview.style.display = 'flex';
-    });
-    
-    removeFileBtn?.addEventListener('click', () => {
-      dropZone.style.display = 'flex';
-      uploadedFilePreview.style.display = 'none';
-    });
-    
-    document.getElementById('next-3')?.addEventListener('click', () => goToStep(4));
-
-    // Step 4: Auth & Submit
-    const consent = document.getElementById('aadhaar-consent');
-    const getOtpBtn = document.getElementById('get-otp-btn');
-    const submitBtn = document.getElementById('submit-claim-btn');
-    const otpSection = document.getElementById('otp-section');
-    
-    consent?.addEventListener('change', (e) => {
-      getOtpBtn.disabled = !e.target.checked;
-    });
-    
-    getOtpBtn?.addEventListener('click', () => {
-      getOtpBtn.style.display = 'none';
-      otpSection.style.display = 'block';
-      submitBtn.style.display = 'block';
-    });
-    
-    submitBtn?.addEventListener('click', () => {
-      goToStep(5);
-    });
-
-    // Back buttons
-    document.querySelectorAll('.prev-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const target = e.currentTarget.getAttribute('data-target');
-        if (target) goToStep(parseInt(target));
-      });
-    });
   });
 </script>
 
@@ -367,6 +93,8 @@ import { mockUser } from '../data/mockData';
   .claim-container {
     padding-top: 2rem;
     padding-bottom: 4rem;
+    max-width: 800px;
+    margin: 0 auto;
   }
   
   .page-header {
@@ -382,296 +110,117 @@ import { mockUser } from '../data/mockData';
   .breadcrumbs a {
     color: var(--primary);
   }
+
+  .page-header h1 {
+    font-size: 2rem;
+    color: var(--text-main);
+  }
   
-  .wizard-card {
+  .digilocker-card {
     padding: 0;
-    max-width: 800px;
-    margin: 0 auto;
+    overflow: hidden;
   }
-  
-  .w-full { width: 100%; }
-  
-  /* Alert Boxes */
-  .alert-box {
-    padding: 1.25rem;
-    border-radius: var(--radius-md);
-    margin-bottom: 1.5rem;
-  }
-  
-  .alert-box h4 {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-  }
-  
-  .alert-box p {
-    font-size: 0.875rem;
-    line-height: 1.5;
-  }
-  
-  .alert-danger {
-    background: var(--danger-bg);
-    border: 1px solid var(--danger);
-    color: #991b1b;
-  }
-  
-  .alert-danger h4 { color: var(--danger); }
-  
-  .alert-warning {
-    background: var(--warning-bg);
-    border: 1px solid var(--warning);
-    color: #92400e;
-  }
-  
-  .alert-warning h4 { color: var(--warning); }
-  
-  .consolidation-action {
-    background: white;
-    padding: 1.25rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--warning);
-  }
-  
-  /* Wizard Progress */
-  .wizard-progress {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 2rem;
-    background: var(--primary-light);
+
+  .digilocker-header {
+    background: #f8fafc;
     border-bottom: 1px solid var(--border);
-    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
-  }
-  
-  .step-indicator {
+    padding: 1.5rem 2rem;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    position: relative;
-    z-index: 2;
+    gap: 1rem;
   }
-  
-  .step-circle {
-    width: 32px;
-    height: 32px;
+
+  .dl-icon {
+    color: var(--secondary);
+    background: var(--success-bg);
+    width: 48px;
+    height: 48px;
     border-radius: 50%;
-    background: white;
-    border: 2px solid var(--text-light);
-    color: var(--text-light);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 600;
-    transition: all 0.3s;
   }
-  
-  .step-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: var(--text-light);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-  
-  .step-indicator.active .step-circle {
-    border-color: var(--primary);
-    background: var(--primary);
-    color: white;
-  }
-  
-  .step-indicator.active .step-label {
-    color: var(--primary);
-  }
-  
-  .progress-line {
-    flex: 1;
-    height: 2px;
-    background: var(--border);
-    margin: 0 1rem;
-    transform: translateY(-10px);
-  }
-  
-  /* Wizard Steps */
-  .wizard-step {
-    padding: 2.5rem;
-    display: none;
-    animation: fadeIn 0.3s ease;
-  }
-  
-  .wizard-step.active {
-    display: block;
-  }
-  
-  .wizard-step h2 {
-    font-size: 1.5rem;
+
+  .digilocker-header h3 {
+    font-size: 1.25rem;
     color: var(--text-main);
-    margin-bottom: 0.5rem;
   }
-  
-  .step-desc {
-    color: var(--text-muted);
-    margin-bottom: 2rem;
+
+  .data-grid {
+    padding: 2rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    border-bottom: 1px solid var(--border);
   }
-  
-  /* Forms */
-  .form-group {
-    margin-bottom: 1.5rem;
+
+  .data-item {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
   }
-  
-  .form-group label {
+
+  .data-label {
     font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-main);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
-  
-  .form-select, input[type="text"], input[type="number"], textarea {
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    font-size: 1rem;
-    font-family: inherit;
-    transition: all 0.2s;
-  }
-  
-  .form-select:focus, input:focus, textarea:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px var(--primary-light);
-  }
-  
-  /* Verification Step */
-  .kyc-check-box {
-    background: var(--background);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    padding: 1.5rem;
-    margin-bottom: 2rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .check-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-weight: 500;
-  }
-  
-  .verify-input-wrapper {
-    display: flex;
-    gap: 1rem;
-  }
-  
-  .verify-input-wrapper input {
-    flex: 1;
-    font-family: monospace;
-    letter-spacing: 2px;
-  }
-  
-  .success-text {
-    color: var(--success);
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-top: 0.5rem;
-  }
-  
-  .error-text {
-    color: var(--danger);
-    font-size: 0.875rem;
-    font-weight: 500;
-    margin-top: 0.5rem;
-  }
-  
-  /* Upload Step */
-  .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: var(--radius-lg);
-    padding: 3rem 2rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    background: var(--background);
-    transition: all 0.2s;
-  }
-  
-  .upload-zone:hover {
-    border-color: var(--primary);
-    background: var(--primary-light);
-  }
-  
-  .upload-zone h4 {
-    margin-top: 1rem;
+
+  .data-value {
     font-size: 1.125rem;
-  }
-  
-  .uploaded-file {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
-    border: 1px solid var(--success);
-    background: var(--success-bg);
-    border-radius: var(--radius-md);
-  }
-  
-  .file-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  
-  .file-name {
     font-weight: 500;
-    color: var(--success);
-  }
-  
-  .text-danger {
-    color: var(--danger);
-    font-weight: 500;
-  }
-  
-  /* Auth Step */
-  .consent-box {
-    display: flex;
-    gap: 1rem;
-    align-items: flex-start;
-    padding: 1.5rem;
-    background: var(--warning-bg);
-    border: 1px solid #fcd34d;
-    border-radius: var(--radius-md);
-    margin-bottom: 2rem;
-  }
-  
-  .consent-box input[type="checkbox"] {
-    margin-top: 0.25rem;
-    width: 1.25rem;
-    height: 1.25rem;
-  }
-  
-  .consent-box label {
-    font-size: 0.875rem;
-    line-height: 1.6;
     color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .amount-card {
+    margin: 2rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    box-shadow: var(--shadow-md);
+  }
+
+  .amount-label {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+  }
+
+  .amount-value {
+    font-size: 3rem;
+    font-weight: 700;
+  }
+
+  .action-section {
+    padding: 0 2rem 2rem;
+    text-align: center;
+  }
+
+  .btn-large {
+    font-size: 1.25rem;
+    padding: 1.25rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
   }
   
-  .text-success {
-    color: var(--success);
-    font-weight: 500;
+  .w-full {
+    width: 100%;
   }
   
   /* Success Step */
   .success-step {
     text-align: center;
     padding: 4rem 2rem;
+    animation: fadeIn 0.5s ease;
   }
   
   .success-icon {
@@ -709,22 +258,9 @@ import { mockUser } from '../data/mockData';
     font-weight: 700;
     color: var(--primary);
   }
-  
-  /* Actions */
-  .wizard-actions {
-    margin-top: 3rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: flex-end;
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
   }
-  
-  .wizard-actions.space-between {
-    justify-content: space-between;
-  }
-  
-  .mt-2 { margin-top: 0.5rem; }
-  .mt-4 { margin-top: 1rem; }
-  .mt-6 { margin-top: 1.5rem; }
-  .mb-4 { margin-bottom: 1rem; }
 </style>
