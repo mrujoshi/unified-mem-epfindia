@@ -63,7 +63,7 @@ export const mockUser: UserProfile = {
       companyName: "Innovatech Startups",
       establishmentId: "KABAN0009876000",
       dateOfJoining: "01-Jan-2020",
-      dateOfExit: null, // missing by default
+      dateOfExit: "28-Feb-2022",
       totalEmployeeShare: 43200,
       totalEmployerShare: 13200,
       totalPensionShare: 30000,
@@ -78,7 +78,7 @@ export const mockUser: UserProfile = {
       companyName: "First Job Enterprises",
       establishmentId: "MHBAN0004567000",
       dateOfJoining: "01-Jun-2018",
-      dateOfExit: null, // intentionally missing to trigger error
+      dateOfExit: "31-Dec-2019",
       totalEmployeeShare: 21600,
       totalEmployerShare: 6600,
       totalPensionShare: 15000,
