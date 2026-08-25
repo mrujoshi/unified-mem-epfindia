@@ -1,0 +1,168 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Login">
+	<main class="login-container">
+		<div class="login-card card glass">
+			<div class="logo-area">
+				<div class="logo-placeholder"></div>
+				<h1>EPFO Unified Portal</h1>
+				<p class="text-muted">Member e-Sewa</p>
+			</div>
+			
+			<form class="login-form" action="/dashboard" method="GET">
+				<div class="form-group">
+					<label for="uan">UAN</label>
+					<input type="text" id="uan" name="uan" value="100987654321" required placeholder="Enter your 12 digit UAN" />
+				</div>
+				
+				<div class="form-group">
+					<label for="password">Password</label>
+					<input type="password" id="password" name="password" value="password123" required placeholder="Enter password" />
+				</div>
+				
+				<div class="form-group captcha-group">
+					<label>Captcha</label>
+					<div class="captcha-box">
+						<div class="captcha-img">X 7 Y 9 Q</div>
+						<input type="text" placeholder="Enter Captcha" required value="X7Y9Q" />
+					</div>
+				</div>
+				
+				<button type="submit" class="btn btn-primary login-btn">Sign In</button>
+			</form>
+			
+			<div class="login-links">
+				<a href="#" class="text-sm">Forgot Password?</a>
+				<a href="#" class="text-sm">Activate UAN</a>
+			</div>
+		</div>
+	</main>
+</Layout>
+
+<style>
+	.login-container {
+		min-height: 100vh;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background: linear-gradient(135deg, var(--primary-light) 0%, #e0e7ff 100%);
+		padding: 1rem;
+	}
+	
+	.login-card {
+		width: 100%;
+		max-width: 400px;
+		padding: 2.5rem 2rem;
+		border-radius: var(--radius-xl);
+	}
+	
+	.logo-area {
+		text-align: center;
+		margin-bottom: 2rem;
+	}
+	
+	.logo-placeholder {
+		width: 64px;
+		height: 64px;
+		background: var(--primary);
+		border-radius: 50%;
+		margin: 0 auto 1rem;
+		position: relative;
+	}
+	
+	.logo-placeholder::after {
+		content: '';
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		width: 32px;
+		height: 32px;
+		background: white;
+		border-radius: 50%;
+	}
+	
+	.logo-area h1 {
+		font-size: 1.25rem;
+		font-weight: 600;
+		color: var(--text-main);
+	}
+	
+	.form-group {
+		margin-bottom: 1.5rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+	
+	.form-group label {
+		font-size: 0.875rem;
+		font-weight: 500;
+		color: var(--text-main);
+	}
+	
+	.form-group input {
+		padding: 0.75rem 1rem;
+		border: 1px solid var(--border);
+		border-radius: var(--radius-md);
+		font-size: 1rem;
+		transition: all 0.2s;
+	}
+	
+	.form-group input:focus {
+		outline: none;
+		border-color: var(--primary);
+		box-shadow: 0 0 0 3px var(--primary-light);
+	}
+	
+	.captcha-box {
+		display: flex;
+		gap: 1rem;
+	}
+	
+	.captcha-img {
+		flex: 1;
+		background: #f1f5f9;
+		border: 1px dashed var(--text-muted);
+		border-radius: var(--radius-md);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-family: monospace;
+		font-size: 1.25rem;
+		font-weight: bold;
+		letter-spacing: 0.25rem;
+		color: var(--text-main);
+		user-select: none;
+	}
+	
+	.captcha-box input {
+		flex: 1;
+		width: 50%;
+	}
+	
+	.login-btn {
+		width: 100%;
+		font-size: 1.125rem;
+		margin-top: 1rem;
+	}
+	
+	.login-links {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 1.5rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--border);
+	}
+	
+	.login-links a {
+		color: var(--primary);
+		font-weight: 500;
+	}
+	
+	.login-links a:hover {
+		text-decoration: underline;
+	}
+</style>

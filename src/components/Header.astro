@@ -1,0 +1,161 @@
+---
+import { mockUser } from '../data/mockData';
+---
+
+<header class="app-header">
+  <div class="container header-content">
+    <div class="logo-area">
+      <div class="logo-placeholder"></div>
+      <div class="logo-text">
+        <h2>EPFO</h2>
+        <span class="text-sm">Unified Member Portal</span>
+      </div>
+    </div>
+    
+    <nav class="main-nav">
+      <a href="/dashboard" class="nav-link active">Home</a>
+      <a href="#" class="nav-link">View</a>
+      <a href="#" class="nav-link">Manage</a>
+      <a href="#" class="nav-link">Account</a>
+      <a href="#" class="nav-link">Online Services</a>
+    </nav>
+    
+    <div class="user-menu">
+      <div class="avatar">{mockUser.name.charAt(0)}</div>
+      <div class="user-info">
+        <span class="user-name">{mockUser.name}</span>
+        <span class="user-uan">UAN: {mockUser.uan}</span>
+      </div>
+      <a href="/" class="btn-logout">Logout</a>
+    </div>
+  </div>
+</header>
+
+<style>
+  .app-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+  }
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 72px;
+  }
+  
+  .logo-area {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .logo-placeholder {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  .logo-placeholder::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+  }
+  
+  .logo-text h2 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--primary);
+  }
+  
+  .main-nav {
+    display: flex;
+    gap: 2rem;
+  }
+  
+  .nav-link {
+    font-weight: 500;
+    color: var(--text-muted);
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.2s;
+  }
+  
+  .nav-link:hover, .nav-link.active {
+    color: var(--primary);
+  }
+  
+  .nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+    width: 100%;
+    height: 3px;
+    background: var(--primary);
+    border-radius: 3px 3px 0 0;
+  }
+  
+  .user-menu {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary-light);
+    color: var(--primary);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1.125rem;
+  }
+  
+  .user-info {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .user-name {
+    font-weight: 600;
+    font-size: 0.875rem;
+  }
+  
+  .user-uan {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  .btn-logout {
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    background: #f1f5f9;
+    color: var(--text-muted);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .btn-logout:hover {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+</style>

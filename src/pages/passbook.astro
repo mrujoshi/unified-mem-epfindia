@@ -1,0 +1,311 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import { mockUser } from '../data/mockData';
+---
+
+<Layout title="Unified Passbook">
+  <Header />
+  
+  <main class="passbook-container container">
+    <div class="page-header">
+      <div class="breadcrumbs">
+        <a href="/dashboard">Dashboard</a> &gt; <span>Passbook</span>
+      </div>
+      <h1>Unified Member Passbook</h1>
+      <p class="text-muted">View your contribution history across all establishments</p>
+    </div>
+    
+    <div class="passbook-layout">
+      <!-- Sidebar / Member Selector -->
+      <aside class="member-sidebar card">
+        <div class="sidebar-header">
+          <h3>Select Member ID</h3>
+        </div>
+        <div class="member-list" id="memberList">
+          {mockUser.memberIds.map((member, index) => (
+            <button class={`member-btn ${index === 0 ? 'active' : ''}`} data-id={member.memberId}>
+              <div class="company-name">{member.companyName}</div>
+              <div class="member-id">{member.memberId}</div>
+              <div class="status-badge">
+                {member.dateOfExit ? 'Previous' : 'Current'}
+              </div>
+            </button>
+          ))}
+        </div>
+      </aside>
+      
+      <!-- Passbook Details -->
+      <section class="passbook-details">
+        {mockUser.memberIds.map((member, index) => (
+          <div class={`member-passbook-view ${index === 0 ? 'active' : ''}`} id={`view-${member.memberId}`}>
+            
+            <div class="summary-cards">
+              <div class="summary-card card">
+                <span class="summary-label">Employee Share</span>
+                <span class="summary-value text-primary">₹{member.totalEmployeeShare.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="summary-card card">
+                <span class="summary-label">Employer Share</span>
+                <span class="summary-value text-secondary">₹{member.totalEmployerShare.toLocaleString('en-IN')}</span>
+              </div>
+              <div class="summary-card card">
+                <span class="summary-label">Pension Share</span>
+                <span class="summary-value text-warning">₹{member.totalPensionShare.toLocaleString('en-IN')}</span>
+              </div>
+            </div>
+            
+            <div class="table-card card">
+              <div class="card-header">
+                <h3>Contribution Details</h3>
+                <button class="btn btn-outline btn-sm">Download PDF</button>
+              </div>
+              <div class="table-responsive">
+                <table class="passbook-table">
+                  <thead>
+                    <tr>
+                      <th>Month/Year</th>
+                      <th>Date of Credit</th>
+                      <th class="text-right">Employee Share (₹)</th>
+                      <th class="text-right">Employer Share (₹)</th>
+                      <th class="text-right">Pension Share (₹)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {member.contributions.map((contribution) => (
+                      <tr>
+                        <td><strong>{contribution.monthYear}</strong></td>
+                        <td>{contribution.dateOfCredit}</td>
+                        <td class="text-right text-primary font-medium">{contribution.employeeShare.toLocaleString('en-IN')}</td>
+                        <td class="text-right text-secondary font-medium">{contribution.employerShare.toLocaleString('en-IN')}</td>
+                        <td class="text-right text-warning font-medium">{contribution.pensionShare.toLocaleString('en-IN')}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        ))}
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<script>
+  // Simple client-side routing for the tabs
+  document.addEventListener('DOMContentLoaded', () => {
+    const memberBtns = document.querySelectorAll('.member-btn');
+    const memberViews = document.querySelectorAll('.member-passbook-view');
+    
+    memberBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all
+        memberBtns.forEach(b => b.classList.remove('active'));
+        memberViews.forEach(v => v.classList.remove('active'));
+        
+        // Add active class to clicked
+        btn.classList.add('active');
+        const memberId = btn.getAttribute('data-id');
+        document.getElementById(`view-${memberId}`)?.classList.add('active');
+      });
+    });
+  });
+</script>
+
+<style>
+  .passbook-container {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  
+  .page-header {
+    margin-bottom: 2rem;
+  }
+  
+  .breadcrumbs {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  
+  .breadcrumbs a {
+    color: var(--primary);
+  }
+  
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+  
+  .page-header h1 {
+    font-size: 1.875rem;
+    color: var(--text-main);
+  }
+  
+  .passbook-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+  }
+  
+  .sidebar-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .sidebar-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+  }
+  
+  .member-list {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .member-btn {
+    text-align: left;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--border);
+    transition: all 0.2s;
+    background: transparent;
+  }
+  
+  .member-btn:last-child {
+    border-bottom: none;
+  }
+  
+  .member-btn:hover {
+    background: var(--background);
+  }
+  
+  .member-btn.active {
+    background: var(--primary-light);
+    border-left: 4px solid var(--primary);
+  }
+  
+  .company-name {
+    font-weight: 600;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+  }
+  
+  .member-id {
+    font-family: monospace;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    background: var(--border);
+    color: var(--text-muted);
+    border-radius: var(--radius-sm);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .member-btn.active .status-badge {
+    background: var(--primary);
+    color: white;
+  }
+  
+  .member-passbook-view {
+    display: none;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .member-passbook-view.active {
+    display: block;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .summary-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .summary-card {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .summary-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .summary-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+  
+  .text-primary { color: var(--primary); }
+  .text-secondary { color: var(--secondary); }
+  .text-warning { color: var(--warning); }
+  
+  .table-card {
+    overflow: hidden;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .btn-sm {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .passbook-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .passbook-table th {
+    background: var(--background);
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  
+  .passbook-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+  }
+  
+  .passbook-table tr:hover td {
+    background: var(--background);
+  }
+  
+  .text-right {
+    text-align: right !important;
+  }
+</style>

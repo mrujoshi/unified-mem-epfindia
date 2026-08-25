@@ -1,0 +1,383 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import { mockUser } from '../data/mockData';
+---
+
+<Layout title="Mark Exit Date">
+  <Header />
+  
+  <main class="mark-exit-container container">
+    <div class="page-header">
+      <div class="breadcrumbs">
+        <a href="/dashboard">Dashboard</a> &gt; <span>Mark Exit Date</span>
+      </div>
+      <h1>Update Date of Exit</h1>
+      <p class="text-muted">Mandatory for online PF transfers and full withdrawals.</p>
+    </div>
+    
+    <div class="split-layout">
+      <!-- Form Section -->
+      <div class="form-section card">
+        <div id="loading-state">
+          <p>Loading employment details...</p>
+        </div>
+        
+        <div id="exit-form-container" style="display: none;">
+          <div class="employment-card">
+            <div class="company-info">
+              <h3 id="display-company-name">Loading...</h3>
+              <p class="member-id">Member ID: <span id="display-member-id"></span></p>
+            </div>
+            <div class="join-date">
+              <span class="label">Date of Joining</span>
+              <strong id="display-doj"></strong>
+            </div>
+          </div>
+          
+          <div class="form-group mt-6">
+            <label for="exit-date">Select Date of Exit (EPF)</label>
+            <input type="date" id="exit-date" class="form-control" />
+            <p class="help-text">Must be at least 60 days after your last PF contribution.</p>
+          </div>
+          
+          <div class="form-group">
+            <label for="exit-reason">Reason for Exit</label>
+            <select id="exit-reason" class="form-select">
+              <option value="" disabled selected>Select Reason</option>
+              <option value="short-service">Cessation (Short Service) - Resignation</option>
+              <option value="retirement">Retirement</option>
+              <option value="superannuation">Superannuation</option>
+              <option value="permanent-disablement">Permanent Disablement</option>
+            </select>
+          </div>
+          
+          <div class="auth-section mt-8">
+            <h3>Aadhaar Authentication</h3>
+            
+            <div class="consent-box mt-4">
+              <input type="checkbox" id="aadhaar-consent" />
+              <label for="aadhaar-consent">
+                I hereby consent to provide my Aadhaar Number and OTP data for establishing my identity to update my Date of Exit. I understand this action is final and cannot be easily modified later.
+              </label>
+            </div>
+            
+            <div class="otp-section mt-4" id="otp-section" style="display: none;">
+              <p class="text-success mb-4">OTP sent successfully to mobile ending in ****89!</p>
+              <div class="form-group">
+                <label for="otp">Enter 6-digit Aadhaar OTP</label>
+                <input type="text" id="otp" maxlength="6" placeholder="Enter OTP (e.g. 123456)" />
+              </div>
+            </div>
+            
+            <div class="actions mt-6">
+              <button class="btn btn-outline" onclick="window.history.back()">Cancel</button>
+              <button class="btn btn-primary" id="get-otp-btn" disabled>Request OTP</button>
+              <button class="btn btn-primary" id="submit-exit-btn" style="display: none;">Update Exit Date</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Success State -->
+        <div id="success-state" style="display: none;" class="success-container">
+          <div class="success-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+          </div>
+          <h2>Exit Date Updated Successfully!</h2>
+          <p class="text-muted mt-2">Your employment record has been updated with the EPFO.</p>
+          
+          <div class="mt-8">
+            <p class="mb-4">You can now proceed with your online claim.</p>
+            <a href="/claim" class="btn btn-primary w-full">Return to Claim</a>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Info Section -->
+      <aside class="info-section">
+        <div class="info-card card">
+          <h4><svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg> Important Notes</h4>
+          <ul class="info-list">
+            <li>Date of Exit can only be marked if <strong>2 months</strong> have passed since your last contribution.</li>
+            <li>Once updated, the Date of Exit <strong>cannot be modified online</strong>. Please select the exact date carefully.</li>
+            <li>If you are unsure of the exact date, refer to your relieving letter or final payslip.</li>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </main>
+</Layout>
+
+<script define:vars={{ mockUser }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Get Member ID from URL params
+    const urlParams = new URLSearchParams(window.location.search);
+    const targetMemberId = urlParams.get('id');
+    
+    // Read state
+    let userStr = localStorage.getItem('epfMockUser');
+    if (!userStr) {
+      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
+      userStr = JSON.stringify(mockUser);
+    }
+    const currentUser = JSON.parse(userStr);
+    
+    const loadingState = document.getElementById('loading-state');
+    const formContainer = document.getElementById('exit-form-container');
+    
+    // 2. Find the member in mock data
+    let targetMember = null;
+    if (targetMemberId) {
+      targetMember = currentUser.memberIds.find(m => m.memberId === targetMemberId);
+    } else {
+      // Fallback: pick the first one missing a DOE
+      targetMember = currentUser.memberIds.find(m => !m.dateOfExit && m !== currentUser.memberIds[0]);
+    }
+    
+    if (targetMember) {
+      // Populate details
+      document.getElementById('display-company-name').textContent = targetMember.companyName;
+      document.getElementById('display-member-id').textContent = targetMember.memberId;
+      document.getElementById('display-doj').textContent = targetMember.dateOfJoining;
+      
+      loadingState.style.display = 'none';
+      formContainer.style.display = 'block';
+    } else {
+      loadingState.innerHTML = '<p class="text-danger">Error: Could not find employment record. Please return to the dashboard.</p>';
+    }
+    
+    // 3. Auth & Submit Logic
+    const consent = document.getElementById('aadhaar-consent');
+    const getOtpBtn = document.getElementById('get-otp-btn');
+    const submitBtn = document.getElementById('submit-exit-btn');
+    const otpSection = document.getElementById('otp-section');
+    const successState = document.getElementById('success-state');
+    
+    consent?.addEventListener('change', (e) => {
+      getOtpBtn.disabled = !e.target.checked;
+    });
+    
+    getOtpBtn?.addEventListener('click', () => {
+      getOtpBtn.style.display = 'none';
+      otpSection.style.display = 'block';
+      submitBtn.style.display = 'block';
+    });
+    
+    submitBtn?.addEventListener('click', () => {
+      // Save the exit date to local storage
+      const exitDateInput = document.getElementById('exit-date').value;
+      if (targetMember) {
+        targetMember.dateOfExit = exitDateInput || new Date().toISOString().split('T')[0]; // fallback to today if empty
+        localStorage.setItem('epfMockUser', JSON.stringify(currentUser));
+      }
+      
+      // Simulate API call and success
+      formContainer.style.display = 'none';
+      successState.style.display = 'block';
+    });
+  });
+</script>
+
+<style>
+  .mark-exit-container {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  
+  .page-header {
+    margin-bottom: 2rem;
+  }
+  
+  .breadcrumbs {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  
+  .breadcrumbs a {
+    color: var(--primary);
+  }
+  
+  .split-layout {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+  
+  .form-section {
+    padding: 2.5rem;
+  }
+  
+  .employment-card {
+    background: var(--primary-light);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .company-info h3 {
+    font-size: 1.25rem;
+    color: var(--text-main);
+    margin-bottom: 0.25rem;
+  }
+  
+  .member-id {
+    font-family: monospace;
+    color: var(--text-muted);
+  }
+  
+  .join-date {
+    text-align: right;
+  }
+  
+  .join-date .label {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .form-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+  }
+  
+  .form-control, .form-select {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    font-family: inherit;
+    transition: all 0.2s;
+  }
+  
+  .form-control:focus, .form-select:focus, input[type="text"]:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+  }
+  
+  input[type="text"] {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    width: 100%;
+  }
+  
+  .help-text {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+  
+  .auth-section {
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+  
+  .consent-box {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    background: var(--warning-bg);
+    border: 1px solid #fcd34d;
+    border-radius: var(--radius-md);
+  }
+  
+  .consent-box input[type="checkbox"] {
+    margin-top: 0.25rem;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+  
+  .consent-box label {
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--text-main);
+  }
+  
+  .actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  .info-card {
+    padding: 1.5rem;
+    background: var(--surface);
+  }
+  
+  .info-card h4 {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-main);
+    margin-bottom: 1rem;
+    font-weight: 600;
+  }
+  
+  .info-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .info-list li {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    line-height: 1.5;
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  
+  .info-list li::before {
+    content: "•";
+    color: var(--primary);
+    position: absolute;
+    left: 0;
+    top: 0;
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+  
+  .success-container {
+    text-align: center;
+    padding: 3rem 1rem;
+  }
+  
+  .success-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--success);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+  
+  .w-full { width: 100%; display: block; text-align: center; }
+  .text-danger { color: var(--danger); }
+  .text-success { color: var(--success); font-weight: 500; }
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-4 { margin-top: 1rem; }
+  .mt-6 { margin-top: 1.5rem; }
+  .mt-8 { margin-top: 2rem; }
+  .mb-4 { margin-bottom: 1rem; }
+</style>

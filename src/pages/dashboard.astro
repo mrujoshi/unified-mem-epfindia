@@ -1,0 +1,325 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import { mockUser } from '../data/mockData';
+---
+
+<Layout title="Dashboard">
+  <Header />
+  
+  <main class="dashboard-container container">
+    <div class="welcome-section">
+      <h1>Welcome, {mockUser.name}</h1>
+      <p class="text-muted">Last successful login: Today at 10:45 AM</p>
+    </div>
+    
+    <div class="dashboard-grid">
+      <!-- Member Profile Card -->
+      <section class="card profile-card">
+        <div class="card-header">
+          <h3>Member Profile</h3>
+          <span class="badge badge-success">Active</span>
+        </div>
+        <div class="profile-details">
+          <div class="detail-row">
+            <span class="detail-label">UAN</span>
+            <span class="detail-value font-semibold">{mockUser.uan}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Name</span>
+            <span class="detail-value">{mockUser.name}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Date of Birth</span>
+            <span class="detail-value">{mockUser.dob}</span>
+          </div>
+        </div>
+        
+        <div class="kyc-status mt-4">
+          <h4>KYC Status</h4>
+          <div class="kyc-grid">
+            <div class="kyc-item">
+              <span class="kyc-label">Aadhaar</span>
+              <span class={`status-indicator status-${mockUser.aadhaarStatus.toLowerCase()}`}>
+                {mockUser.aadhaarStatus}
+              </span>
+            </div>
+            <div class="kyc-item">
+              <span class="kyc-label">PAN</span>
+              <span class={`status-indicator status-${mockUser.panStatus.toLowerCase()}`}>
+                {mockUser.panStatus}
+              </span>
+            </div>
+            <div class="kyc-item">
+              <span class="kyc-label">Bank</span>
+              <span class={`status-indicator status-${mockUser.bankStatus.toLowerCase()}`}>
+                {mockUser.bankStatus}
+              </span>
+            </div>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Unified Passbook Access Card -->
+      <section class="card passbook-promo-card">
+        <div class="promo-content">
+          <div class="promo-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+              <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+            </svg>
+          </div>
+          <div class="promo-text">
+            <h3>Unified Passbook</h3>
+            <p>View your complete contribution history across all your previous and current employers seamlessly in one place.</p>
+          </div>
+          <a href="/passbook" class="btn btn-primary view-passbook-btn">
+            View Full Passbook
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+              <polyline points="12 5 19 12 12 19"></polyline>
+            </svg>
+          </a>
+        </div>
+      </section>
+      
+      <!-- Recent Activity / Info -->
+      <section class="card info-card">
+        <div class="card-header">
+          <h3>Quick Links</h3>
+        </div>
+        <ul class="quick-links">
+          <li><a href="#">Update KYC Information</a></li>
+          <li><a href="#">Track Claim Status</a></li>
+          <li><a href="/claim">Online Claim (Form 31, 19, 10C)</a></li>
+          <li><a href="#">e-Nomination</a></li>
+        </ul>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .dashboard-container {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  
+  .welcome-section {
+    margin-bottom: 2rem;
+  }
+  
+  .welcome-section h1 {
+    font-size: 1.875rem;
+    color: var(--text-main);
+  }
+  
+  .dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding: 1.25rem 1.5rem;
+  }
+  
+  .card-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .badge-success {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  
+  .profile-card {
+    grid-column: span 8;
+  }
+  
+  .profile-details {
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+  
+  .detail-row {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .detail-label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  
+  .detail-value {
+    font-size: 1.125rem;
+    color: var(--text-main);
+  }
+  
+  .kyc-status {
+    padding: 0 1.5rem 1.5rem;
+  }
+  
+  .kyc-status h4 {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .kyc-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  
+  .kyc-item {
+    background: var(--background);
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .kyc-label {
+    font-weight: 500;
+    font-size: 0.875rem;
+  }
+  
+  .status-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius-sm);
+  }
+  
+  .status-verified {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  
+  .status-verified::before {
+    content: '✓';
+  }
+  
+  .passbook-promo-card {
+    grid-column: span 4;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%);
+    color: white;
+    border: none;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .passbook-promo-card::after {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+  }
+  
+  .promo-content {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    position: relative;
+    z-index: 1;
+  }
+  
+  .promo-icon {
+    background: rgba(255, 255, 255, 0.2);
+    width: 64px;
+    height: 64px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .promo-text h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+  }
+  
+  .promo-text p {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+  
+  .view-passbook-btn {
+    margin-top: auto;
+    background: white;
+    color: var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .view-passbook-btn:hover {
+    background: var(--primary-light);
+    box-shadow: none;
+    transform: translateX(4px);
+  }
+  
+  .info-card {
+    grid-column: span 12;
+  }
+  
+  .quick-links {
+    list-style: none;
+    padding: 1rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  
+  .quick-links a {
+    display: block;
+    padding: 1rem;
+    background: var(--background);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    color: var(--primary);
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.2s;
+  }
+  
+  .quick-links a:hover {
+    background: var(--primary-light);
+    border-color: var(--primary);
+  }
+</style>
