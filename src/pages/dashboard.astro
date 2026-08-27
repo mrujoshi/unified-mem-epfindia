@@ -16,7 +16,7 @@ import { mockUser } from '../data/mockData';
     <!-- Alerts Row: Nudge + Last Claim Status -->
     <div class="alerts-row">
       <!-- Smart Notification Alert -->
-      <div class="smart-alert">
+      <div class="smart-alert" id="nudge-alert">
         <div class="alert-icon">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
         </div>
@@ -24,7 +24,7 @@ import { mockUser } from '../data/mockData';
           <h4>Action Recommended</h4>
           <p>Your employer missed the PF deposit for July 2026. Would you like to send an anonymous nudge?</p>
         </div>
-        <button class="btn btn-primary alert-btn">Send Nudge</button>
+        <button class="btn btn-primary alert-btn" id="send-nudge-btn">Send Nudge</button>
       </div>
 
       <!-- Last Claim Status Banner -->
@@ -191,6 +191,25 @@ import { mockUser } from '../data/mockData';
       banner.classList.add(`banner-${lastFYClaim.status.toLowerCase().replace(' ', '-')}`);
       banner.style.display = 'flex';
     }
+
+    // Send Nudge Button
+    const nudgeBtn = document.getElementById('send-nudge-btn');
+    const nudgeAlert = document.getElementById('nudge-alert');
+    nudgeBtn?.addEventListener('click', () => {
+      nudgeBtn.disabled = true;
+      nudgeBtn.textContent = 'Sending...';
+      setTimeout(() => {
+        nudgeAlert.style.background = 'var(--success-bg)';
+        nudgeAlert.style.borderColor = 'var(--success)';
+        nudgeAlert.querySelector('.alert-icon').style.color = 'var(--success)';
+        nudgeAlert.querySelector('.alert-icon svg').innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+        nudgeAlert.querySelector('h4').textContent = 'Nudge Sent Anonymously!';
+        nudgeAlert.querySelector('p').textContent = 'EPFO has been notified. Your employer will receive a compliance reminder for July 2026. Your identity is protected.';
+        nudgeBtn.textContent = '✓ Done';
+        nudgeBtn.style.background = 'var(--success)';
+        nudgeBtn.style.border = 'none';
+      }, 1200);
+    });
 
     const aiInput = document.getElementById('ai-input-field');
     const aiSubmit = document.getElementById('ai-submit-btn');
