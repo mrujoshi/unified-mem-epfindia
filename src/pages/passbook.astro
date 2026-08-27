@@ -2,6 +2,27 @@
 import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import { mockUser } from '../data/mockData';
+
+// Calculate grand totals for the Overview tab
+const grandTotalEmployee = mockUser.memberIds.reduce((sum, m) => sum + m.totalEmployeeShare, 0);
+const grandTotalEmployer = mockUser.memberIds.reduce((sum, m) => sum + m.totalEmployerShare, 0);
+const grandTotalPension = mockUser.memberIds.reduce((sum, m) => sum + m.totalPensionShare, 0);
+const grandTotal = grandTotalEmployee + grandTotalEmployer + grandTotalPension;
+
+// Helper to generate the CSS conic-gradient for the donut chart
+const getChartStyle = (emp, er, pen) => {
+  const total = emp + er + pen;
+  if (total === 0) return 'background: #e2e8f0;';
+  
+  const empPct = (emp / total) * 100;
+  const erPct = (er / total) * 100;
+  
+  const empEnd = empPct;
+  const erEnd = empEnd + erPct;
+  
+  // --primary: #2563eb; --secondary: #10b981; --warning: #f59e0b;
+  return `background: conic-gradient(var(--primary) 0% ${empEnd}%, var(--secondary) ${empEnd}% ${erEnd}%, var(--warning) ${erEnd}% 100%);`;
+};
 ---
 
 <Layout title="Unified Passbook">
@@ -20,11 +41,17 @@ import { mockUser } from '../data/mockData';
       <!-- Sidebar / Member Selector -->
       <aside class="member-sidebar card">
         <div class="sidebar-header">
-          <h3>Select Member ID</h3>
+          <h3>Select Account</h3>
         </div>
         <div class="member-list" id="memberList">
-          {mockUser.memberIds.map((member, index) => (
-            <button class={`member-btn ${index === 0 ? 'active' : ''}`} data-id={member.memberId}>
+          <!-- Overview Button -->
+          <button class="member-btn active" data-id="overview">
+            <div class="company-name">Overview (All Accounts)</div>
+            <div class="member-id">Unified Balance</div>
+          </button>
+          
+          {mockUser.memberIds.map((member) => (
+            <button class="member-btn" data-id={member.memberId}>
               <div class="company-name">{member.companyName}</div>
               <div class="member-id">{member.memberId}</div>
               <div class="status-badge">
@@ -37,21 +64,113 @@ import { mockUser } from '../data/mockData';
       
       <!-- Passbook Details -->
       <section class="passbook-details">
-        {mockUser.memberIds.map((member, index) => (
-          <div class={`member-passbook-view ${index === 0 ? 'active' : ''}`} id={`view-${member.memberId}`}>
+        
+        <!-- Overview Tab -->
+        <div class="member-passbook-view active" id="view-overview">
+          
+          <div class="card overview-hero mb-6">
+            <div class="overview-grid">
+              <div class="chart-section">
+                <div class="donut-chart-container large">
+                  <div class="donut-chart" style={getChartStyle(grandTotalEmployee, grandTotalEmployer, grandTotalPension)}>
+                    <div class="donut-hole">
+                      <span class="donut-total">₹{grandTotal.toLocaleString('en-IN')}</span>
+                      <span class="donut-label">Total Balance</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="legend-section">
+                <h3>Unified Balance Breakdown</h3>
+                <p class="text-muted text-sm mb-4">Total accumulation across all your linked PF accounts.</p>
+                <div class="legend-item">
+                  <div class="legend-color bg-primary"></div>
+                  <div class="legend-text">
+                    <span class="legend-title">Employee Share</span>
+                    <span class="legend-value font-semibold">₹{grandTotalEmployee.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+                <div class="legend-item mt-3">
+                  <div class="legend-color bg-secondary"></div>
+                  <div class="legend-text">
+                    <span class="legend-title">Employer Share</span>
+                    <span class="legend-value font-semibold">₹{grandTotalEmployer.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+                <div class="legend-item mt-3">
+                  <div class="legend-color bg-warning"></div>
+                  <div class="legend-text">
+                    <span class="legend-title">Pension Share</span>
+                    <span class="legend-value font-semibold">₹{grandTotalPension.toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="table-card card">
+            <div class="card-header">
+              <h3>Accounts Summary</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="passbook-table">
+                <thead>
+                  <tr>
+                    <th>Company Name</th>
+                    <th>Member ID</th>
+                    <th class="text-right">Total Balance (₹)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {mockUser.memberIds.map((member) => {
+                    const memTotal = member.totalEmployeeShare + member.totalEmployerShare + member.totalPensionShare;
+                    return (
+                      <tr>
+                        <td><strong>{member.companyName}</strong></td>
+                        <td class="font-mono text-sm text-muted">{member.memberId}</td>
+                        <td class="text-right text-primary font-medium">{memTotal.toLocaleString('en-IN')}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Individual Member Tabs -->
+        {mockUser.memberIds.map((member) => (
+          <div class="member-passbook-view" id={`view-${member.memberId}`}>
             
-            <div class="summary-cards">
-              <div class="summary-card card">
-                <span class="summary-label">Employee Share</span>
-                <span class="summary-value text-primary">₹{member.totalEmployeeShare.toLocaleString('en-IN')}</span>
-              </div>
-              <div class="summary-card card">
-                <span class="summary-label">Employer Share</span>
-                <span class="summary-value text-secondary">₹{member.totalEmployerShare.toLocaleString('en-IN')}</span>
-              </div>
-              <div class="summary-card card">
-                <span class="summary-label">Pension Share</span>
-                <span class="summary-value text-warning">₹{member.totalPensionShare.toLocaleString('en-IN')}</span>
+            <div class="member-hero-card card mb-6">
+              <div class="member-hero-grid">
+                <div class="chart-section small">
+                  <div class="donut-chart-container">
+                    <div class="donut-chart" style={getChartStyle(member.totalEmployeeShare, member.totalEmployerShare, member.totalPensionShare)}>
+                      <div class="donut-hole">
+                        <span class="donut-total small">₹{(member.totalEmployeeShare + member.totalEmployerShare + member.totalPensionShare).toLocaleString('en-IN')}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="member-summary-details">
+                  <h3>{member.companyName}</h3>
+                  <p class="text-muted text-sm mb-4 font-mono">{member.memberId}</p>
+                  <div class="summary-cards">
+                    <div class="summary-card compact border-primary">
+                      <span class="summary-label">Employee</span>
+                      <span class="summary-value text-primary">₹{member.totalEmployeeShare.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="summary-card compact border-secondary">
+                      <span class="summary-label">Employer</span>
+                      <span class="summary-value text-secondary">₹{member.totalEmployerShare.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div class="summary-card compact border-warning">
+                      <span class="summary-label">Pension</span>
+                      <span class="summary-value text-warning">₹{member.totalPensionShare.toLocaleString('en-IN')}</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
             
@@ -226,30 +345,137 @@ import { mockUser } from '../data/mockData';
     to { opacity: 1; transform: translateY(0); }
   }
   
+  /* Donut Chart Styles */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    align-items: center;
+    padding: 2rem;
+  }
+
+  .member-hero-grid {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2rem;
+    align-items: center;
+    padding: 2rem;
+  }
+  
+  .donut-chart-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
+  .donut-chart-container.large .donut-chart {
+    width: 240px;
+    height: 240px;
+  }
+  
+  .donut-chart {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* conic-gradient is applied via inline style */
+  }
+  
+  .donut-hole {
+    width: 75%;
+    height: 75%;
+    background-color: white; /* Matches the card background */
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0.5rem;
+  }
+  
+  .donut-total {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-main);
+  }
+  
+  .donut-total.small {
+    font-size: 1.125rem;
+  }
+  
+  .donut-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+  }
+  
+  /* Legend & Summary Cards */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .legend-color {
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+  }
+  
+  .bg-primary { background-color: var(--primary); }
+  .bg-secondary { background-color: var(--secondary); }
+  .bg-warning { background-color: var(--warning); }
+  
+  .legend-text {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .legend-title {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  
+  .legend-value {
+    font-size: 1.125rem;
+    color: var(--text-main);
+  }
+  
   .summary-cards {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
-    margin-bottom: 1.5rem;
   }
   
-  .summary-card {
-    padding: 1.5rem;
+  .summary-card.compact {
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 0.25rem;
   }
+
+  .summary-card.border-primary { border-left: 3px solid var(--primary); }
+  .summary-card.border-secondary { border-left: 3px solid var(--secondary); }
+  .summary-card.border-warning { border-left: 3px solid var(--warning); }
   
   .summary-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.05em;
   }
   
   .summary-value {
-    font-size: 1.75rem;
+    font-size: 1.25rem;
     font-weight: 700;
   }
   
@@ -308,4 +534,14 @@ import { mockUser } from '../data/mockData';
   .text-right {
     text-align: right !important;
   }
+  
+  .font-mono {
+    font-family: monospace;
+  }
+  .font-semibold {
+    font-weight: 600;
+  }
+  .mb-6 { margin-bottom: 1.5rem; }
+  .mt-3 { margin-top: 0.75rem; }
+  .mb-4 { margin-bottom: 1rem; }
 </style>
