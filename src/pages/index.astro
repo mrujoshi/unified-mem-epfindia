@@ -1,5 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { mockUser } from '../data/mockData';
 ---
 
 <Layout title="Login">
@@ -40,6 +41,14 @@ import Layout from '../layouts/Layout.astro';
 		</div>
 	</main>
 </Layout>
+
+<script define:vars={{ mockUser }}>
+	// Reset the mock user state at the start of every session (login page)
+	const freshUser = JSON.parse(JSON.stringify(mockUser));
+	// Ensure the active member ID has a blank exit date
+	freshUser.memberIds[0].dateOfExit = null;
+	localStorage.setItem('epfMockUser', JSON.stringify(freshUser));
+</script>
 
 <style>
 	.login-container {
