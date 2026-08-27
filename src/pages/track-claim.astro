@@ -32,68 +32,146 @@ import { mockUser } from '../data/mockData';
               <th>Remarks</th>
             </tr>
           </thead>
-          <tbody>
-            {mockUser.claims.map((claim) => (
-              <tr>
-                <td><strong>{claim.trackingId}</strong></td>
-                <td>{claim.formType}</td>
-                <td>{claim.submittedDate}</td>
-                <td>{claim.sentToFO || '-'}</td>
-                <td>
-                  <span class={`status-badge status-${claim.status.toLowerCase().replace(' ', '-')}`}>
-                    {claim.status}
-                  </span>
-                </td>
-                <td class="text-muted">{claim.remarks || '-'}</td>
-              </tr>
-            ))}
+          <tbody id="claims-table-body">
+            <!-- Populated by JS -->
           </tbody>
         </table>
       </div>
     </div>
     
-    <div class="timeline-section card">
+    <div class="timeline-section card" id="timeline-section" style="display: none;">
       <div class="card-header">
-        <h3>Live Tracking: {mockUser.claims[0].trackingId}</h3>
+        <h3 id="timeline-title">Live Tracking: </h3>
       </div>
       <div class="timeline-body">
-        <div class="timeline">
-          <div class="timeline-step completed">
-            <div class="step-icon">✓</div>
-            <div class="step-content">
-              <h4>Claim Submitted</h4>
-              <p>{mockUser.claims[0].submittedDate}</p>
-            </div>
-          </div>
-          
-          <div class="timeline-step completed">
-            <div class="step-icon">✓</div>
-            <div class="step-content">
-              <h4>Sent to Field Office</h4>
-              <p>{mockUser.claims[0].sentToFO}</p>
-            </div>
-          </div>
-          
-          <div class="timeline-step active">
-            <div class="step-icon">⟳</div>
-            <div class="step-content">
-              <h4>Under Process</h4>
-              <p>Expected resolution in 3-5 working days.</p>
-            </div>
-          </div>
-          
-          <div class="timeline-step pending">
-            <div class="step-icon">⏳</div>
-            <div class="step-content">
-              <h4>Settled / Rejected</h4>
-              <p>Pending</p>
-            </div>
-          </div>
+        <div class="timeline" id="timeline-container">
+          <!-- Populated by JS -->
         </div>
       </div>
     </div>
   </main>
 </Layout>
+
+<script define:vars={{ mockUser }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    let userStr = localStorage.getItem('epfMockUser');
+    if (!userStr) {
+      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
+      userStr = JSON.stringify(mockUser);
+    }
+    const currentUser = JSON.parse(userStr);
+    
+    const tableBody = document.getElementById('claims-table-body');
+    const timelineSection = document.getElementById('timeline-section');
+    const timelineTitle = document.getElementById('timeline-title');
+    const timelineContainer = document.getElementById('timeline-container');
+    
+    // Render Table
+    tableBody.innerHTML = currentUser.claims.map(claim => {
+      const statusClass = claim.status.toLowerCase().replace(' ', '-');
+      let tooltip = '';
+      if (claim.status === 'Under Process') {
+        tooltip = 'title="Initiated claims are expected to be settled within 2 weeks"';
+      }
+      return `
+        <tr>
+          <td><strong>${claim.trackingId}</strong></td>
+          <td>${claim.formType}</td>
+          <td>${claim.submittedDate}</td>
+          <td>${claim.sentToFO || '-'}</td>
+          <td>
+            <span class="status-badge status-${statusClass}" ${tooltip}>
+              ${claim.status} ${claim.status === 'Under Process' ? 'ℹ️' : ''}
+            </span>
+          </td>
+          <td class="text-muted">${claim.remarks || '-'}</td>
+        </tr>
+      `;
+    }).join('');
+
+    // Render Timeline (show latest claim)
+    if (currentUser.claims.length > 0) {
+      const latestClaim = currentUser.claims[0];
+      timelineSection.style.display = 'block';
+      timelineTitle.textContent = `Live Tracking: ${latestClaim.trackingId}`;
+      
+      const isUnderProcess = latestClaim.status === 'Under Process';
+      const isSettled = latestClaim.status === 'Settled';
+      const isRejected = latestClaim.status === 'Rejected';
+
+      timelineContainer.innerHTML = `
+        <div class="timeline-step completed">
+          <div class="step-icon">✓</div>
+          <div class="step-content">
+            <h4>Claim Submitted</h4>
+            <p>${latestClaim.submittedDate}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-step ${latestClaim.sentToFO ? 'completed' : 'active'}">
+          <div class="step-icon">${latestClaim.sentToFO ? '✓' : '⟳'}</div>
+          <div class="step-content">
+            <h4>Sent to Field Office</h4>
+            <p>${latestClaim.sentToFO || 'Pending'}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-step ${isSettled || isRejected ? 'completed' : (isUnderProcess ? 'active' : 'pending')}">
+          <div class="step-icon">${isSettled || isRejected ? '✓' : (isUnderProcess ? '⟳' : '⏳')}</div>
+          <div class="step-content">
+            <h4>Under Process</h4>
+            <p>${isSettled || isRejected ? 'Completed' : 'Expected resolution in 3-5 working days.'}</p>
+          </div>
+        </div>
+        
+        <div class="timeline-step ${isSettled ? 'completed' : (isRejected ? 'rejected' : 'pending')}">
+          <div class="step-icon">${isSettled || isRejected ? (isSettled ? '✓' : '✗') : '⏳'}</div>
+          <div class="step-content">
+            <h4 style="${isRejected ? 'color: var(--danger)' : ''}">${isSettled ? 'Settled' : (isRejected ? 'Rejected' : 'Settled / Rejected')}</h4>
+            <p>${latestClaim.remarks || 'Pending'}</p>
+          </div>
+        </div>
+      `;
+
+      // 15 Second Magic Settlement for Form-13
+      if (latestClaim.formType.includes('Form-13') && latestClaim.status === 'Under Process') {
+        setTimeout(() => {
+          // Update claim status
+          latestClaim.status = 'Settled';
+          latestClaim.remarks = 'Transfer completed successfully';
+          latestClaim.sentToFO = latestClaim.submittedDate; // Assume sent same day
+          
+          // Fund transfer logic
+          let totalEmployeeToAdd = 0;
+          let totalEmployerToAdd = 0;
+          let totalPensionToAdd = 0;
+          
+          for (let i = 1; i < currentUser.memberIds.length; i++) {
+            totalEmployeeToAdd += currentUser.memberIds[i].totalEmployeeShare;
+            totalEmployerToAdd += currentUser.memberIds[i].totalEmployerShare;
+            totalPensionToAdd += currentUser.memberIds[i].totalPensionShare;
+            
+            // Zero out old accounts
+            currentUser.memberIds[i].totalEmployeeShare = 0;
+            currentUser.memberIds[i].totalEmployerShare = 0;
+            currentUser.memberIds[i].totalPensionShare = 0;
+          }
+          
+          // Add to current (index 0)
+          currentUser.memberIds[0].totalEmployeeShare += totalEmployeeToAdd;
+          currentUser.memberIds[0].totalEmployerShare += totalEmployerToAdd;
+          currentUser.memberIds[0].totalPensionShare += totalPensionToAdd;
+          
+          localStorage.setItem('epfMockUser', JSON.stringify(currentUser));
+          
+          // Alert and reload
+          alert("Demo Magic: Transfer Settled in 15 seconds! Funds moved to current account.");
+          window.location.reload();
+        }, 15000); // 15 seconds
+      }
+    }
+  });
+</script>
 
 <style>
   .track-claim-container {
@@ -176,11 +254,14 @@ import { mockUser } from '../data/mockData';
   }
   
   .status-badge {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
+    cursor: help;
   }
   
   .status-under-process {
@@ -289,5 +370,10 @@ import { mockUser } from '../data/mockData';
   
   .timeline-step.pending .step-content h4 {
     color: var(--text-muted);
+  }
+  
+  .timeline-step.rejected .step-icon {
+    background: var(--danger);
+    color: white;
   }
 </style>

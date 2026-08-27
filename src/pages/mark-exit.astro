@@ -119,9 +119,10 @@ import { mockUser } from '../data/mockData';
 
 <script define:vars={{ mockUser }}>
   document.addEventListener('DOMContentLoaded', () => {
-    // 1. Get Member ID from URL params
+    // 1. Get URL params
     const urlParams = new URLSearchParams(window.location.search);
     const targetMemberId = urlParams.get('id');
+    const redirectParam = urlParams.get('redirect');
     
     // Read state
     let userStr = localStorage.getItem('epfMockUser');
@@ -219,12 +220,17 @@ import { mockUser } from '../data/mockData';
       formContainer.style.display = 'none';
       successState.style.display = 'block';
       
-      // Hide "Return to Claim" if navigated directly (no member ID in URL)
-      if (!targetMemberId) {
-        const returnToClaimSection = document.getElementById('return-to-claim-section');
-        if (returnToClaimSection) {
-          returnToClaimSection.style.display = 'none';
-        }
+      // Update success button based on redirect param
+      const returnToClaimSection = document.getElementById('return-to-claim-section');
+      if (redirectParam === 'claim') {
+        returnToClaimSection.innerHTML = `
+          <p class="mb-4">You can now proceed with your online claim.</p>
+          <a href="/claim" class="btn btn-primary w-full">Return to Claim</a>
+        `;
+      } else {
+        returnToClaimSection.innerHTML = `
+          <a href="/dashboard" class="btn btn-primary w-full">Return to Dashboard</a>
+        `;
       }
     });
   });

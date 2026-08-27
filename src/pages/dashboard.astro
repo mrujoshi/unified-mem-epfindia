@@ -111,6 +111,10 @@ import { mockUser } from '../data/mockData';
           <div class="promo-text">
             <h3>Unified Passbook</h3>
             <p>View your complete contribution history across all your previous and current employers seamlessly in one place.</p>
+            <div style="margin-bottom: 1.5rem;">
+              <span class="text-sm" style="opacity: 0.9;">Total Estimated Balance</span>
+              <div id="dashboard-unified-balance" style="font-size: 2rem; font-weight: 700;">₹ 0</div>
+            </div>
           </div>
           <a href="/passbook" class="btn btn-primary view-passbook-btn">
             View Full Passbook
@@ -121,12 +125,66 @@ import { mockUser } from '../data/mockData';
           </a>
         </div>
       </section>
+
+      <!-- Recent Claims Card -->
+      <section class="card claims-card" style="grid-column: span 12;">
+        <div class="card-header">
+          <h3>Recent Claims</h3>
+          <a href="/track-claim" style="color: var(--primary); font-size: 0.875rem; font-weight: 500;">View All</a>
+        </div>
+        <div class="table-responsive">
+          <table class="claim-table">
+            <thead>
+              <tr>
+                <th>Tracking ID</th>
+                <th>Form Type</th>
+                <th>Submitted Date</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="dashboard-claims-body">
+              <!-- Populated via JS -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </main>
 </Layout>
 
-<script>
+<script define:vars={{ mockUser }}>
   document.addEventListener('DOMContentLoaded', () => {
+    // LocalStorage sync for widgets
+    let userStr = localStorage.getItem('epfMockUser');
+    if (!userStr) {
+      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
+      userStr = JSON.stringify(mockUser);
+    }
+    const currentUser = JSON.parse(userStr);
+
+    // Total Balance
+    const totalBalance = currentUser.memberIds.reduce((sum, m) => sum + m.totalEmployeeShare + m.totalEmployerShare + m.totalPensionShare, 0);
+    const balanceEl = document.getElementById('dashboard-unified-balance');
+    if (balanceEl) {
+      balanceEl.textContent = `₹ ${totalBalance.toLocaleString('en-IN')}`;
+    }
+
+    // Recent Claims
+    const claimsBody = document.getElementById('dashboard-claims-body');
+    if (claimsBody) {
+      claimsBody.innerHTML = currentUser.claims.slice(0, 3).map(claim => {
+        const statusClass = claim.status.toLowerCase().replace(' ', '-');
+        return `
+          <tr>
+            <td><strong>${claim.trackingId}</strong></td>
+            <td>${claim.formType}</td>
+            <td>${claim.submittedDate}</td>
+            <td><span class="status-badge status-${statusClass}">${claim.status}</span></td>
+          </tr>
+        `;
+      }).join('');
+    }
+
     const aiInput = document.getElementById('ai-input-field');
     const aiSubmit = document.getElementById('ai-submit-btn');
 
@@ -630,5 +688,59 @@ import { mockUser } from '../data/mockData';
     border-color: var(--primary);
     color: var(--primary);
     background: var(--primary-light);
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .claim-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .claim-table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  
+  .claim-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.95rem;
+  }
+  
+  .claim-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .status-under-process {
+    background: var(--warning-bg);
+    color: var(--warning);
+  }
+  
+  .status-settled {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  
+  .status-rejected {
+    background: var(--danger-bg);
+    color: var(--danger);
   }
 </style>

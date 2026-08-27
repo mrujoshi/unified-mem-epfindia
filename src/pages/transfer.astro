@@ -3,21 +3,13 @@ import Layout from '../layouts/Layout.astro';
 import Header from '../components/Header.astro';
 import { mockUser } from '../data/mockData';
 
-// Mock previous accounts for demonstration
-const previousAccounts = [
-  {
-    company: "TCS Ltd.",
-    memberId: "MH/BAN/12345/000/7654321",
-    dateOfExit: "15-Aug-2022",
-    balance: "₹ 1,12,000"
-  },
-  {
-    company: "Infosys Pvt Ltd.",
-    memberId: "KN/BNG/98765/000/1234567",
-    dateOfExit: "30-Nov-2019",
-    balance: "₹ 45,500"
-  }
-];
+// Map non-active accounts (index > 0) to previous accounts
+const previousAccounts = mockUser.memberIds.slice(1).map(m => ({
+  company: m.companyName,
+  memberId: m.memberId,
+  dateOfExit: m.dateOfExit || 'Not Updated',
+  balance: `₹ ${(m.totalEmployeeShare + m.totalEmployerShare).toLocaleString('en-IN')}`
+}));
 ---
 
 <Layout title="Merge PF Accounts">
@@ -102,15 +94,50 @@ const previousAccounts = [
   </main>
 </Layout>
 
-<script>
-  document.getElementById('one-click-submit')?.addEventListener('click', () => {
-    const claimForm = document.getElementById('transfer-form-state');
-    const successState = document.getElementById('success-state');
-    
-    if(claimForm && successState) {
-      claimForm.style.display = 'none';
-      successState.style.display = 'block';
+<script define:vars={{ mockUser }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    let userStr = localStorage.getItem('epfMockUser');
+    if (!userStr) {
+      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
+      userStr = JSON.stringify(mockUser);
     }
+    const currentUser = JSON.parse(userStr);
+
+    document.getElementById('one-click-submit')?.addEventListener('click', () => {
+      const claimForm = document.getElementById('transfer-form-state');
+      const successState = document.getElementById('success-state');
+      
+      if(claimForm && successState) {
+        claimForm.style.display = 'none';
+        successState.style.display = 'block';
+
+        // Add a new Form-13 claim to localStorage
+        const today = new Date().toLocaleDateString('en-GB').replace(/\//g, '-');
+        const trackingId = `TRF-${Math.floor(Math.random() * 1000000)}`;
+        
+        currentUser.claims.unshift({
+          trackingId: trackingId,
+          formType: "Form-13 (Transfer)",
+          submittedDate: today,
+          sentToFO: null,
+          status: "Under Process",
+          remarks: "Pending verification at field office"
+        });
+
+        localStorage.setItem('epfMockUser', JSON.stringify(currentUser));
+
+        // Update tracking ID in UI
+        const trackingValueEl = document.querySelector('.tracking-value');
+        if (trackingValueEl) {
+          trackingValueEl.textContent = trackingId;
+        }
+
+        // Redirect to track-claim after a short delay so they can read the success message
+        setTimeout(() => {
+          window.location.href = '/track-claim';
+        }, 2000);
+      }
+    });
   });
 </script>
 

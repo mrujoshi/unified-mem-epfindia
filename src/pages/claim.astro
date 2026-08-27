@@ -16,7 +16,32 @@ import { mockUser } from '../data/mockData';
       <p class="text-muted">Your intent: "Withdraw my PF". We've prepared everything for you.</p>
     </div>
 
-    <div class="card digilocker-card" id="claim-form-state">
+    <!-- Error State: Missing DOE -->
+    <div id="error-missing-doe" class="card error-card" style="display: none;">
+      <div class="error-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+      </div>
+      <h2>Action Required: Missing Date of Exit</h2>
+      <p class="text-muted mt-2">To process a full and final settlement, you must mark the exit date for your employment.</p>
+      <div class="mt-6">
+        <a href="/mark-exit?redirect=claim" class="btn btn-primary">Mark Exit Date Now</a>
+      </div>
+    </div>
+
+    <!-- Error State: Untransferred Funds -->
+    <div id="error-untransferred-funds" class="card error-card" style="display: none;">
+      <div class="error-icon" style="background: var(--warning-light); color: var(--warning);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg>
+      </div>
+      <h2>Action Required: Un-transferred Funds Found</h2>
+      <p class="text-muted mt-2">We found funds in your previous PF accounts. You must transfer these funds to your current account before a full final withdrawal.</p>
+      <div class="mt-6">
+        <a href="/transfer?redirect=claim" class="btn btn-primary">Transfer Funds Now</a>
+      </div>
+    </div>
+
+    <!-- Success 1-Click Form -->
+    <div class="card digilocker-card" id="claim-form-state" style="display: none;">
        <div class="digilocker-header">
          <div class="dl-icon">
            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
@@ -47,7 +72,7 @@ import { mockUser } from '../data/mockData';
 
        <div class="amount-card">
          <span class="amount-label">Estimated Withdrawal Amount</span>
-         <span class="amount-value">₹ 2,45,000</span>
+         <span class="amount-value" id="total-withdrawal-amount">₹ 0</span>
        </div>
 
        <div class="action-section">
@@ -77,15 +102,47 @@ import { mockUser } from '../data/mockData';
   </main>
 </Layout>
 
-<script>
-  document.getElementById('one-click-submit')?.addEventListener('click', () => {
-    const claimForm = document.getElementById('claim-form-state');
-    const successState = document.getElementById('success-state');
-    
-    if(claimForm && successState) {
-      claimForm.style.display = 'none';
-      successState.style.display = 'block';
+<script define:vars={{ mockUser }}>
+  document.addEventListener('DOMContentLoaded', () => {
+    let userStr = localStorage.getItem('epfMockUser');
+    if (!userStr) {
+      localStorage.setItem('epfMockUser', JSON.stringify(mockUser));
+      userStr = JSON.stringify(mockUser);
     }
+    const currentUser = JSON.parse(userStr);
+    
+    // Check missing DOE
+    const hasMissingDOE = currentUser.memberIds.some(m => !m.dateOfExit);
+    
+    // Check untransferred funds (balances in non-current accounts)
+    // Assume current account is index 0. If any other account has > 0 balance.
+    const hasUntransferredFunds = currentUser.memberIds.length > 1 && 
+      currentUser.memberIds.slice(1).some(m => (m.totalEmployeeShare + m.totalEmployerShare) > 0);
+
+    const claimForm = document.getElementById('claim-form-state');
+    const doeError = document.getElementById('error-missing-doe');
+    const transferError = document.getElementById('error-untransferred-funds');
+    
+    if (hasMissingDOE) {
+      doeError.style.display = 'block';
+    } else if (hasUntransferredFunds) {
+      transferError.style.display = 'block';
+    } else {
+      // Both passed, show claim form
+      claimForm.style.display = 'block';
+      // Calculate total of active account
+      const total = currentUser.memberIds[0].totalEmployeeShare + currentUser.memberIds[0].totalEmployerShare;
+      document.getElementById('total-withdrawal-amount').textContent = `₹ ${total.toLocaleString('en-IN')}`;
+    }
+
+    // Submit handler
+    document.getElementById('one-click-submit')?.addEventListener('click', () => {
+      const successState = document.getElementById('success-state');
+      if(claimForm && successState) {
+        claimForm.style.display = 'none';
+        successState.style.display = 'block';
+      }
+    });
   });
 </script>
 
@@ -116,9 +173,28 @@ import { mockUser } from '../data/mockData';
     color: var(--text-main);
   }
   
+  .error-card {
+    text-align: center;
+    padding: 3rem 2rem;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .error-icon {
+    width: 80px;
+    height: 80px;
+    background: #fee2e2;
+    color: var(--danger);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+  }
+
   .digilocker-card {
     padding: 0;
     overflow: hidden;
+    animation: fadeIn 0.3s ease;
   }
 
   .digilocker-header {
@@ -258,6 +334,9 @@ import { mockUser } from '../data/mockData';
     font-weight: 700;
     color: var(--primary);
   }
+
+  .mt-2 { margin-top: 0.5rem; }
+  .mt-6 { margin-top: 1.5rem; }
 
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
