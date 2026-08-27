@@ -20,5 +20,16 @@ const { title } = Astro.props;
 	</head>
 	<body>
 		<slot />
+		
+		<!-- Hackathon Demo Utility -->
+		<div style="position: fixed; bottom: 10px; right: 10px; z-index: 9999;">
+			<button 
+				onclick="localStorage.clear(); window.location.reload();" 
+				style="background: transparent; border: 1px solid #ccc; color: #888; font-size: 10px; padding: 2px 6px; border-radius: 4px; cursor: pointer; opacity: 0.5;"
+				title="Reset Demo Data (Clears LocalStorage)"
+			>
+				Reset Demo
+			</button>
+		</div>
 	</body>
 </html>
