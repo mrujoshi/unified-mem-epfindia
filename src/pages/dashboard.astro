@@ -26,6 +26,32 @@ import { mockUser } from '../data/mockData';
     </div>
     
     <div class="dashboard-grid">
+      <!-- AI Chat Bar / Search -->
+      <section class="card info-card ai-search-card">
+        <div class="ai-search-container">
+          <div class="ai-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <h2>What do you need help with today?</h2>
+          <div class="search-wrapper">
+            <input type="text" placeholder="e.g., I want to withdraw my PF..." class="ai-input" id="ai-input-field" />
+            <div class="search-actions">
+              <button class="btn-mic" aria-label="Voice Command" title="Speak your request" id="mic-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-icon"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
+              </button>
+              <button class="btn btn-primary ai-submit" id="ai-submit-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
+            </div>
+          </div>
+          <div class="suggestion-chips">
+            <a href="/claim" class="chip">Withdraw my PF</a>
+            <a href="/passbook" class="chip">Check my balance</a>
+            <a href="/track-claim" class="chip">Track claim status</a>
+          </div>
+        </div>
+      </section>
+      
       <!-- Member Profile Card -->
       <section class="card profile-card">
         <div class="card-header">
@@ -94,32 +120,6 @@ import { mockUser } from '../data/mockData';
           </a>
         </div>
       </section>
-      
-      <!-- AI Chat Bar / Search -->
-      <section class="card info-card ai-search-card">
-        <div class="ai-search-container">
-          <div class="ai-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20"></path><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-          </div>
-          <h2>What do you need help with today?</h2>
-          <div class="search-wrapper">
-            <input type="text" placeholder="e.g., I want to withdraw my PF..." class="ai-input" id="ai-input-field" />
-            <div class="search-actions">
-              <button class="btn-mic" aria-label="Voice Command" title="Speak your request" id="mic-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mic-icon"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="22"></line></svg>
-              </button>
-              <button class="btn btn-primary ai-submit" id="ai-submit-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-              </button>
-            </div>
-          </div>
-          <div class="suggestion-chips">
-            <a href="/claim" class="chip">Withdraw my PF</a>
-            <a href="/passbook" class="chip">Check my balance</a>
-            <span class="chip">Update KYC</span>
-          </div>
-        </div>
-      </section>
     </div>
   </main>
 </Layout>
@@ -136,13 +136,16 @@ import { mockUser } from '../data/mockData';
         // Simple Intent Routing
         const isTransfer = text.includes('merge') || text.includes('transfer') || text.includes('consolidate') || text.includes('previous');
         const isClaim = text.includes('withdraw') || text.includes('claim') || text.includes('money') || text.includes('settle');
+        const isTrack = text.includes('track') || text.includes('status') || text.includes('where is');
         
-        if (isTransfer) {
+        if (isTrack) {
+          window.location.href = '/track-claim';
+        } else if (isTransfer) {
           window.location.href = '/transfer';
         } else if (isClaim) {
           window.location.href = '/claim';
         } else {
-          alert("I didn't quite catch that. Try asking to 'withdraw PF' or 'merge previous accounts'.");
+          alert("I didn't quite catch that. Try asking to 'withdraw PF', 'merge accounts', or 'track status'.");
         }
       }
     };

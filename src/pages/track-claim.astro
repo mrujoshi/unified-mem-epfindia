@@ -1,0 +1,293 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import { mockUser } from '../data/mockData';
+---
+
+<Layout title="Track Claim Status">
+  <Header />
+  
+  <main class="track-claim-container container">
+    <div class="page-header">
+      <div class="breadcrumbs">
+        <a href="/dashboard">Dashboard</a> &gt; <span>Track Claim Status</span>
+      </div>
+      <h1>Track Claim Status</h1>
+      <p class="text-muted">Check the status of your online withdrawal or transfer requests</p>
+    </div>
+    
+    <div class="card table-card">
+      <div class="card-header">
+        <h3>Claim History</h3>
+      </div>
+      <div class="table-responsive">
+        <table class="claim-table">
+          <thead>
+            <tr>
+              <th>Tracking ID</th>
+              <th>Form Type</th>
+              <th>Submitted To Portal</th>
+              <th>Sent To Field Office</th>
+              <th>Current Status</th>
+              <th>Remarks</th>
+            </tr>
+          </thead>
+          <tbody>
+            {mockUser.claims.map((claim) => (
+              <tr>
+                <td><strong>{claim.trackingId}</strong></td>
+                <td>{claim.formType}</td>
+                <td>{claim.submittedDate}</td>
+                <td>{claim.sentToFO || '-'}</td>
+                <td>
+                  <span class={`status-badge status-${claim.status.toLowerCase().replace(' ', '-')}`}>
+                    {claim.status}
+                  </span>
+                </td>
+                <td class="text-muted">{claim.remarks || '-'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <div class="timeline-section card">
+      <div class="card-header">
+        <h3>Live Tracking: {mockUser.claims[0].trackingId}</h3>
+      </div>
+      <div class="timeline-body">
+        <div class="timeline">
+          <div class="timeline-step completed">
+            <div class="step-icon">✓</div>
+            <div class="step-content">
+              <h4>Claim Submitted</h4>
+              <p>{mockUser.claims[0].submittedDate}</p>
+            </div>
+          </div>
+          
+          <div class="timeline-step completed">
+            <div class="step-icon">✓</div>
+            <div class="step-content">
+              <h4>Sent to Field Office</h4>
+              <p>{mockUser.claims[0].sentToFO}</p>
+            </div>
+          </div>
+          
+          <div class="timeline-step active">
+            <div class="step-icon">⟳</div>
+            <div class="step-content">
+              <h4>Under Process</h4>
+              <p>Expected resolution in 3-5 working days.</p>
+            </div>
+          </div>
+          
+          <div class="timeline-step pending">
+            <div class="step-icon">⏳</div>
+            <div class="step-content">
+              <h4>Settled / Rejected</h4>
+              <p>Pending</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .track-claim-container {
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+  }
+  
+  .page-header {
+    margin-bottom: 2rem;
+  }
+  
+  .breadcrumbs {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+  }
+  
+  .breadcrumbs a {
+    color: var(--primary);
+  }
+  
+  .breadcrumbs a:hover {
+    text-decoration: underline;
+  }
+  
+  .page-header h1 {
+    font-size: 1.875rem;
+    color: var(--text-main);
+  }
+  
+  .table-card {
+    margin-bottom: 2rem;
+    overflow: hidden;
+  }
+  
+  .card-header {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--background);
+  }
+  
+  .card-header h3 {
+    font-size: 1.125rem;
+    font-weight: 600;
+  }
+  
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .claim-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .claim-table th {
+    text-align: left;
+    padding: 1rem 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border);
+  }
+  
+  .claim-table td {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+    font-size: 0.95rem;
+  }
+  
+  .claim-table tr:last-child td {
+    border-bottom: none;
+  }
+  
+  .claim-table tr:hover td {
+    background: var(--background);
+  }
+  
+  .status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+  }
+  
+  .status-under-process {
+    background: var(--warning-bg);
+    color: var(--warning);
+  }
+  
+  .status-settled {
+    background: var(--success-bg);
+    color: var(--success);
+  }
+  
+  .status-rejected {
+    background: var(--danger-bg);
+    color: var(--danger);
+  }
+  
+  .timeline-section {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  
+  .timeline-body {
+    padding: 2rem;
+  }
+  
+  .timeline {
+    position: relative;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+  
+  .timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 20px;
+    width: 2px;
+    background: var(--border);
+  }
+  
+  .timeline-step {
+    display: flex;
+    margin-bottom: 2rem;
+    position: relative;
+  }
+  
+  .timeline-step:last-child {
+    margin-bottom: 0;
+  }
+  
+  .step-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    z-index: 1;
+    flex-shrink: 0;
+  }
+  
+  .step-content {
+    margin-left: 1.5rem;
+    padding-top: 0.5rem;
+  }
+  
+  .step-content h4 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .step-content p {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+  }
+  
+  .timeline-step.completed .step-icon {
+    background: var(--success);
+    color: white;
+  }
+  
+  .timeline-step.completed .step-content h4 {
+    color: var(--success);
+  }
+  
+  .timeline-step.active .step-icon {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 0 0 4px var(--primary-light);
+  }
+  
+  .timeline-step.active .step-content h4 {
+    color: var(--primary);
+  }
+  
+  .timeline-step.pending .step-icon {
+    background: var(--background);
+    border: 2px solid var(--border);
+    color: var(--text-muted);
+  }
+  
+  .timeline-step.pending .step-content h4 {
+    color: var(--text-muted);
+  }
+</style>

@@ -14,10 +14,44 @@ import { mockUser } from '../data/mockData';
     
     <nav class="main-nav">
       <a href="/dashboard" class="nav-link active">Home</a>
-      <a href="#" class="nav-link">View</a>
-      <a href="#" class="nav-link">Manage</a>
-      <a href="#" class="nav-link">Account</a>
-      <a href="#" class="nav-link">Online Services</a>
+      
+      <div class="nav-dropdown">
+        <a href="#" class="nav-link">View</a>
+        <div class="dropdown-content">
+          <a href="#">Profile</a>
+          <a href="#">Service History</a>
+          <a href="#">UAN Card</a>
+          <a href="/passbook">Passbook</a>
+        </div>
+      </div>
+      
+      <div class="nav-dropdown">
+        <a href="#" class="nav-link">Manage</a>
+        <div class="dropdown-content">
+          <a href="#">Basic Details</a>
+          <a href="#">Contact Details</a>
+          <a href="#">KYC</a>
+          <a href="#">E-Nomination</a>
+          <a href="/mark-exit">Mark Exit</a>
+        </div>
+      </div>
+      
+      <div class="nav-dropdown">
+        <a href="#" class="nav-link">Account</a>
+        <div class="dropdown-content">
+          <a href="#">Change Password</a>
+        </div>
+      </div>
+      
+      <div class="nav-dropdown">
+        <a href="#" class="nav-link">Online Services</a>
+        <div class="dropdown-content">
+          <a href="/claim">Claim (Form-31, 19, 10C & 10D)</a>
+          <a href="/transfer">One Member - One EPF Account (Transfer Request)</a>
+          <a href="/track-claim">Track Claim Status</a>
+          <a href="#">Download Annexure K</a>
+        </div>
+      </div>
     </nav>
     
     <div class="user-menu">
@@ -124,6 +158,52 @@ import { mockUser } from '../data/mockData';
     height: 3px;
     background: var(--primary);
     border-radius: 3px 3px 0 0;
+  }
+  
+  /* Dropdown Styles */
+  .nav-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--surface);
+    min-width: 220px;
+    box-shadow: var(--shadow-md);
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border);
+    z-index: 200;
+    top: 100%;
+    left: 0;
+    margin-top: 0.5rem;
+    padding: 0.5rem 0;
+    overflow: hidden;
+  }
+  
+  .nav-dropdown:hover .dropdown-content {
+    display: block;
+    animation: slideDown 0.2s ease-out;
+  }
+  
+  .dropdown-content a {
+    color: var(--text-main);
+    padding: 0.75rem 1.25rem;
+    text-decoration: none;
+    display: block;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown-content a:hover {
+    background-color: var(--primary-light);
+    color: var(--primary);
+  }
+  
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
   }
   
   .user-menu {

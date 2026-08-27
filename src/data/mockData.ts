@@ -6,6 +6,15 @@ export interface Contribution {
   dateOfCredit: string;
 }
 
+export interface ClaimStatus {
+  trackingId: string;
+  formType: string;
+  submittedDate: string;
+  sentToFO: string | null;
+  status: 'Under Process' | 'Settled' | 'Rejected';
+  remarks?: string;
+}
+
 export interface MemberPassbook {
   memberId: string;
   companyName: string;
@@ -26,6 +35,7 @@ export interface UserProfile {
   panStatus: 'Verified' | 'Pending';
   bankStatus: 'Verified' | 'Pending';
   memberIds: MemberPassbook[];
+  claims: ClaimStatus[];
 }
 
 export const mockUser: UserProfile = {
@@ -85,6 +95,32 @@ export const mockUser: UserProfile = {
       contributions: [
         { monthYear: "Dec 2019", employeeShare: 1800, employerShare: 550, pensionShare: 1250, dateOfCredit: "15-Jan-2020" }
       ]
+    }
+  ],
+  claims: [
+    {
+      trackingId: "ONL9876543210",
+      formType: "Form-31 (PF Advance)",
+      submittedDate: "12-Aug-2026",
+      sentToFO: "14-Aug-2026",
+      status: "Under Process",
+      remarks: "Pending verification at field office"
+    },
+    {
+      trackingId: "ONL1234567890",
+      formType: "Form-13 (Transfer)",
+      submittedDate: "05-Mar-2024",
+      sentToFO: "08-Mar-2024",
+      status: "Settled",
+      remarks: "Transfer completed successfully"
+    },
+    {
+      trackingId: "ONL5555566666",
+      formType: "Form-31 (Illness)",
+      submittedDate: "10-Jan-2023",
+      sentToFO: "12-Jan-2023",
+      status: "Rejected",
+      remarks: "Passbook copy not clear"
     }
   ]
 };
