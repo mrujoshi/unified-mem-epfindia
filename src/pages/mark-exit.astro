@@ -95,7 +95,7 @@ import { mockUser } from '../data/mockData';
           <h2>Exit Date Updated Successfully!</h2>
           <p class="text-muted mt-2">Your employment record has been updated with the EPFO.</p>
           
-          <div class="mt-8">
+          <div class="mt-8" id="return-to-claim-section">
             <p class="mb-4">You can now proceed with your online claim.</p>
             <a href="/claim" class="btn btn-primary w-full">Return to Claim</a>
           </div>
@@ -218,6 +218,14 @@ import { mockUser } from '../data/mockData';
       // Simulate API call and success
       formContainer.style.display = 'none';
       successState.style.display = 'block';
+      
+      // Hide "Return to Claim" if navigated directly (no member ID in URL)
+      if (!targetMemberId) {
+        const returnToClaimSection = document.getElementById('return-to-claim-section');
+        if (returnToClaimSection) {
+          returnToClaimSection.style.display = 'none';
+        }
+      }
     });
   });
 </script>
