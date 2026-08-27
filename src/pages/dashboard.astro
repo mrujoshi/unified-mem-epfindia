@@ -137,6 +137,7 @@ import { mockUser } from '../data/mockData';
         // Simple Intent Routing
         const isTransfer = text.includes('merge') || text.includes('transfer') || text.includes('consolidate') || text.includes('previous');
         const isTrack = text.includes('track') || text.includes('status') || text.includes('where is');
+        const isPassbook = text.includes('passbook') || text.includes('balance') || text.includes('check');
         
         const isPartialClaim = text.includes('partial') || text.includes('advance') || text.includes('loan') || text.includes('illness') || text.includes('marriage') || text.includes('education');
         const isFullClaim = text.includes('full') || text.includes('settle') || text.includes('close account');
@@ -144,6 +145,8 @@ import { mockUser } from '../data/mockData';
         
         if (isTrack) {
           window.location.href = '/track-claim';
+        } else if (isPassbook) {
+          window.location.href = '/passbook';
         } else if (isTransfer) {
           window.location.href = '/transfer';
         } else if (isPartialClaim) {
@@ -153,7 +156,7 @@ import { mockUser } from '../data/mockData';
         } else if (isGenericWithdraw) {
           alert("Did you mean a 'full withdrawal' or a 'partial advance'? Please clarify!");
         } else {
-          alert("I didn't quite catch that. Try asking to 'withdraw PF', 'merge accounts', or 'track status'.");
+          alert("I didn't quite catch that. Try asking to 'withdraw PF', 'merge accounts', 'track status', or 'show passbook'.");
         }
       }
     };
