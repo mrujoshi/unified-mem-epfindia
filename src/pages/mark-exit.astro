@@ -23,6 +23,15 @@ import { mockUser } from '../data/mockData';
           <p>Loading employment details...</p>
         </div>
         
+        <div id="member-selection" style="display: none;" class="mb-4">
+          <div class="form-group">
+            <label for="member-select">Select Employment for Marking Exit</label>
+            <select id="member-select" class="form-select">
+              <option value="" disabled selected>Select Employment</option>
+            </select>
+          </div>
+        </div>
+        
         <div id="exit-form-container" style="display: none;">
           <div class="employment-card">
             <div class="company-info">
@@ -124,27 +133,62 @@ import { mockUser } from '../data/mockData';
     
     const loadingState = document.getElementById('loading-state');
     const formContainer = document.getElementById('exit-form-container');
+    const memberSelection = document.getElementById('member-selection');
+    const memberSelect = document.getElementById('member-select');
     
-    // 2. Find the member in mock data
+    // Populate the dropdown with eligible member IDs (those without an exit date, or all for demo)
+    // Here we list all to let the user see the options
+    currentUser.memberIds.forEach(member => {
+      const option = document.createElement('option');
+      option.value = member.memberId;
+      option.textContent = `${member.companyName} (${member.memberId})`;
+      memberSelect.appendChild(option);
+    });
+
     let targetMember = null;
-    if (targetMemberId) {
-      targetMember = currentUser.memberIds.find(m => m.memberId === targetMemberId);
-    } else {
-      // Fallback: pick the first one missing a DOE
-      targetMember = currentUser.memberIds.find(m => !m.dateOfExit && m !== currentUser.memberIds[0]);
-    }
     
-    if (targetMember) {
-      // Populate details
-      document.getElementById('display-company-name').textContent = targetMember.companyName;
-      document.getElementById('display-member-id').textContent = targetMember.memberId;
-      document.getElementById('display-doj').textContent = targetMember.dateOfJoining;
-      
+    const renderForm = (member) => {
+      if (member) {
+        if (member.dateOfExit) {
+          loadingState.innerHTML = `<p class="text-danger">Exit date is already marked for ${member.companyName} (${member.dateOfExit}).</p>`;
+          loadingState.style.display = 'block';
+          formContainer.style.display = 'none';
+        } else {
+          document.getElementById('display-company-name').textContent = member.companyName;
+          document.getElementById('display-member-id').textContent = member.memberId;
+          document.getElementById('display-doj').textContent = member.dateOfJoining;
+          
+          loadingState.style.display = 'none';
+          formContainer.style.display = 'block';
+        }
+      } else {
+        loadingState.innerHTML = '<p class="text-danger">Error: Could not find employment record.</p>';
+        loadingState.style.display = 'block';
+        formContainer.style.display = 'none';
+      }
+    };
+
+    if (targetMemberId) {
+      // Auto-select if navigated from somewhere with an ID
+      targetMember = currentUser.memberIds.find(m => m.memberId === targetMemberId);
+      if (targetMember) {
+        memberSelect.value = targetMember.memberId;
+      }
+      memberSelection.style.display = 'block';
       loadingState.style.display = 'none';
-      formContainer.style.display = 'block';
+      renderForm(targetMember);
     } else {
-      loadingState.innerHTML = '<p class="text-danger">Error: Could not find employment record. Please return to the dashboard.</p>';
+      // Show dropdown for user to select
+      loadingState.style.display = 'none';
+      memberSelection.style.display = 'block';
     }
+
+    // Handle dropdown selection change
+    memberSelect.addEventListener('change', (e) => {
+      const selectedId = e.target.value;
+      targetMember = currentUser.memberIds.find(m => m.memberId === selectedId);
+      renderForm(targetMember);
+    });
     
     // 3. Auth & Submit Logic
     const consent = document.getElementById('aadhaar-consent');
